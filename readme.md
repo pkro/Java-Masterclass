@@ -52,7 +52,7 @@
 
 ### Sidenotes: 
 
-- constants in Java are defines as **static** (can be used without creating class instance) **final** (can't change): `static  final double KG_FACTOR = 0.45359237d;`; Must be defined in *class*, not in method
+- constants in Java are defines as **static** (can be used without creating class instance) **final** (can't change): `private static final double KG_FACTOR = 0.45359237d;`; Must be defined in *class*, not in method
 - for precise fp calculations, **BigDecimal** should be used
 - Packages: way to organize Java projects; companies use domain names reversed
 
@@ -106,3 +106,13 @@
 ### DiffMerge Tool
 
 - what it says; use something better.
+
+### Methods overloading
+
+- overloaded methods must have a differen parameter signature, a different return type doesn't suffice
+
+### Sidenotes
+
+- `return;` is valid for a void method (NOT `return void;`)
+
+## Control Flow
