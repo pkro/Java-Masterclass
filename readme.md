@@ -116,3 +116,39 @@
 - `return;` is valid for a void method (NOT `return void;`)
 
 ## Control Flow
+
+- switch, for, while, do while: nothing unexpected; String type switch added Java 7+
+
+### String / number conversions
+- Integer.parseInt() / Double.parseDouble etc.; throws exception if not a valid (integer|double|...) format
+- concatenating int to string with "+" automatically converts the int
+
+### User Input (command line)
+
+    Scanner scanner = new Scanner(System.in);
+    String input = scanner.nextLine();
+    scanner.close();
+
+- also nextInt, nextShort, hasNextInt etc. among others
+- for multiple inputs that are terminated by enter (enter gets interpreted as the next input), use `scanner.nextLine();` before reading another input:
+
+      System.out.println("Enter your birthyear: ");
+      int birthYear = scanner.nextInt();
+      System.out.println("Enter your name: ");
+      scanner.nextLine();
+      String name = scanner.nextLine();
+
+### Sidenotes
+
+- Array initialization 
+  - with values: `String days[] = new String[] {'Monday','Tuesday'};`
+  - without type specification when instanciating: `String days[] = {'Monday', 'Tuesday'};`
+  - without values: `String days[] = new String[7];`
+- (Local?) daynames can be got from `String[] javaDays = DateFormatSymbols.getInstance().getWeekdays();`
+- various methods to copy an array:
+  - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
+  - System.arraycopy
+  - by hand of course
+- Example date / formatting / conversion: Condensed getting current year:
+  
+  `int currentYear = Integer.parseInt(new SimpleDateFormat("YYYY").format(new Date(System.currentTimeMillis())));`
