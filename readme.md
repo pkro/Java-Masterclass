@@ -65,7 +65,7 @@
       byte x = (byte) (6/2); // default data type is integer so 6/2 gets interpreted as an int by the compiler; as byte range is smaller than int, it needs to be explicitely cast
 
 
-## OperatorsExpressions, Statements, Code blocks
+## Section 4 OperatorsExpressions, Statements, Code blocks
 - use camel case, even for abreviations (correct: XmlHttpRequest, incorrect: XMLHTTPRequest)
 - methods and variables start with lowercase, classes with uppercase
 
@@ -104,7 +104,7 @@
 - nothing noteworthy otherwise at this point
 
 ### DiffMerge Tool
-
+**this**
 - what it says; use something better.
 
 ### Methods overloading
@@ -115,7 +115,7 @@
 
 - `return;` is valid for a void method (NOT `return void;`)
 
-## Control Flow
+## Section 5 Control Flow
 
 - switch, for, while, do while: nothing unexpected; String type switch added Java 7+
 
@@ -143,12 +143,145 @@
 - Array initialization 
   - with values: `String days[] = new String[] {'Monday','Tuesday'};`
   - without type specification when instanciating: `String days[] = {'Monday', 'Tuesday'};`
-  - without values: `String days[] = new String[7];`
-- (Local?) daynames can be got from `String[] javaDays = DateFormatSymbols.getInstance().getWeekdays();`
-- various methods to copy an array:
+  - without values: `String days[];`
+array:
   - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
   - System.arraycopy
   - by hand of course
 - Example date / formatting / conversion: Condensed getting current year:
   
   `int currentYear = Integer.parseInt(new SimpleDateFormat("YYYY").format(new Date(System.currentTimeMillis())));`
+
+## Section 6 OOP part 1
+
+### Classes
+
+- class files are created in namespace folder, e.g. /de/pkro
+
+      [optional access modifier] class ClassName
+      [public|private|protected] class ClassName
+
+- instance variables (=fields) -> state of class (or rather it's derived object)
+- refered to inside function with this.varName (if parameter naming conflict, otherwise just varName)
+
+- Object instantiation:
+
+  [Classname] varName = new [Classname]([params])
+
+### Constructor
+
+- method with only access modifier (always public), *no return type* and method name = class name
+- to overload a constructor with a constructor that assigns default values, call the constructor that accepts values with "**this**":
+
+      // all parameters
+      public BankAccount(long accountNumber, double balance, String customerName, String email, String phoneNumber) {
+        this.accountNumber = accountNumber;
+        [...]
+      }
+
+      // no parameters
+      public BankAccount() {
+          this(12345, 0, "Default name", "default email", "default phone");
+      }
+
+      // some parameters
+      public BankAccount(String customerName, String email) {
+          this(12345, 0, customerName, email, "default phone");
+      }
+  
+- generally it's regarded as better to assign the values directly (`this.name = name;`) in the constructor as opposed to using the setters (`setName(name);`) in the constructor; reasons:
+  - initial values are guaranteed to be initialized
+  - not all variables that are necessary for validation of another value might have been initialized
+
+### Inheritance
+- all classes inherit from `Object`
+- `public class XXX extends YYY {[...]}`
+- constructor call with super
+
+      public class Dog extends Animal {
+          public Dog(String name, int brain, int body, int size, int weight) {
+              super(name, brain, body, size, weight);
+          }
+      }
+
+- override methods with **@Override (optional**, hint for compiler / IDE to catch errors when efining overridden methods):
+
+      @Override
+      public void eat() {
+          super.eat();
+          chew();
+      }
+
+- if a method has a different signature (but the same name) as the one in the parent class, it's **overloaded** and **not overridden**
+- to call methods from the superclass, it's better practice to call them without super in case they are later overrridden (unless the superclass method version should explicitely be called)
+- **this** is used to call current class members; usually used in constructors and setters, sometimes in getters
+- **super** to call parent class; commonly used in method overriding 
+- both can't be used in a static context
+- **super()**: Java puts a default call to super() in the constructor to call the argument-less constructor of the parent class if we don't add it ourselves
+- the **super()** call must be the first statement in the constructor if it's done explicitely
+- Even abstract classes have a constructor
+- A constructor can have a call to super() or this() but not both
+
+### Overloading / Overriding
+
+#### Overloading
+- Overloading is sometimes refered to as compile time polymorphism (though it isn't polymorphism in the inheritance sense)
+- both static and instance methods can be overloaded
+- Overloaded = same method name but different parameters, **may or may not** have different return types / access modifiers / exceptions
+- usually methods get overloaded in a single class, but a class overloads the parent class' method (no @Override necessary then)
+
+#### Overriding
+
+- aka "runtime polymorphism"
+- means defining a method in the child class with the same name and signature as one in the parent class
+- recommended to put @Override above method definition to let IDE / compiler catch errors
+- only instance methods can be overridden
+- return type can (only) be a subclass of the return type in the parent class
+- can't have a lower access modifier (e.g. if parent method: protected, child method can be public but not private)
+- Constructors and private methods can't be overridden
+- Final methods can't be overridden
+- subclass can still call overridden method version from parent class by using super.methodName
+
+![Same thing as infographic](images/overload_override.png "Same thing as infographic")
+
+### Static vs Instance methods
+
+#### Static methods
+
+- can't use this in static methods
+- methods that don't use instance variables should be declared static
+
+#### Instance methods
+
+- can only be used in class instance (method)
+- can access instance as well as static methods/variables directly
+
+### Static vs instance variables
+
+#### static variables ("static member variables")
+
+- declared with `static`
+- shared with all class instances
+- **if changed, value in all other instances will change too**
+  
+      public class StaticVarTest {
+        public static int maxSpeed = 100;
+      }
+      // in main
+      StaticVarTest a = new StaticVarTest();
+      StaticVarTest b = new StaticVarTest();
+      a.maxSpeed = 5;
+      System.out.println(b.maxSpeed); // 5
+
+- used for example to instantiate a Scanner that can be used in all methods
+
+#### Instance variables
+
+- every instance has its own copy / value
+
+### Sidenotes
+
+- String comparison with .equals method (`firstName.equals("pkro")`)
+- Check if String is empty / uninitialized .isEmpty()
+- default toString method outputs classname and object id
+- Reference assignments as usual
