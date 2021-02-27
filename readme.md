@@ -285,3 +285,66 @@ array:
 - Check if String is empty / uninitialized .isEmpty()
 - default toString method outputs classname and object id
 - Reference assignments as usual
+
+## Section 7 OOP part 2
+
+### Composition
+
+- Inheritance: "is-a" relationship between subclass and parent class
+- Composition: "has-a" relationship: Monitor class has Resolution class
+- basically using other classes / types in a class and construction a parent class from other class components
+
+      Dimensions dimensions = new Dimensions(20, 20, 5);
+      Case theCase = new Case("22b", "Dell", "240", dimensions);
+      Monitor theMonitor = new Monitor("27incher", "Iiyama", 27, new Resolution(2540,1440));
+      Motherboard motherboard = new Motherboard("apc200","apc", 4, 2, "1.5");
+      PC pc = new PC(theCase,theMonitor,motherboard);
+
+#### how to access methods of components? 
+
+- example: pressPowerButton is defined in Case, but we want to access it from the pc object.
+- solution 1: using the getters (duh!):
+
+      pc.getCase().pushPowerButton();
+      pc.getMonitor().drawPixelAt(20,30,"green");
+
+- solution 2: making getters in the class that uses the components private (or removing them alltogether) and wrapping the component's methods:
+      
+In PC class:
+
+      public void powerUp() {
+        theCase.pressPowerButton();
+        drawLogo();
+      }
+
+      public void drawLogo() {
+          monitor.drawPixelAt(40, 30, "purple");
+          monitor.drawPixelAt(40, 30, "green");
+      }
+
+- solution 3: both of the above
+
+#### Where to use inheritance and where composition?
+
+- rule of thumb: composition first as it doesn't create unwieldy class hierarchies
+- works well with the functional paradigm
+- easier to test / write tests for individual classes
+
+### encapsulation
+
+- encapsulate member variable access in methods
+- protects from variable name changes affecting classes using it
+- enables checks before accessing members
+
+### Polymorphism
+
+- basically method overloading. Subclass IS-A Parentclass, but Parentclass IS_NOT_A Subclass
+- Might want to add more explanations here but this seems intuitive and already covered during method overriding section
+- [There obviously is more to it](https://www.infoworld.com/article/3033445/java-101-polymorphism-in-java.html)
+
+### Sidenotes
+
+- Strg-Shift-Space shows method parameters when typing (can be enabled to be always shown)
+- "sout"+tab = System.out.println
+- Strg-F12 shows method / class implementation (where cursor is)
+- classes can be declared inline in the file of another class (e.g. class Main), but then "public" keyword isn't allowed as the class can't be accessed from outside the file.
