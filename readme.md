@@ -2,6 +2,8 @@
 
 ## 3. First steps
 
+- **Primitive types are passed by value, Objects by reference; the original object can be changed (if it's not immutable) when passed as a parameter to a method**
+
 ### 8 primitive types
 
 - **boolean** (Boolean)
@@ -138,16 +140,20 @@
       scanner.nextLine();
       String name = scanner.nextLine();
 
-### Sidenotes
+- user input type check pattern:
 
-- Array initialization 
-  - with values: `String days[] = new String[] {'Monday','Tuesday'};`
-  - without type specification when instanciating: `String days[] = {'Monday', 'Tuesday'};`
-  - without values: `String days[];`
-array:
-  - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
-  - System.arraycopy
-  - by hand of course
+      System.out.println("Enter your choice: ");
+      int choice = -1;
+      while(choice == -1) {
+        if(scanner.hasNextInt()) {
+          choice = scanner.nextInt();
+        } else {
+          System.out.println("Please enter only numbers.");
+        }
+        scanner.nextLine();
+      }
+
+### Sidenotes
 - Example date / formatting / conversion: Condensed getting current year:
   
   `int currentYear = Integer.parseInt(new SimpleDateFormat("YYYY").format(new Date(System.currentTimeMillis())));`
@@ -348,3 +354,99 @@ In PC class:
 - "sout"+tab = System.out.println
 - Strg-F12 shows method / class implementation (where cursor is)
 - classes can be declared inline in the file of another class (e.g. class Main), but then "public" keyword isn't allowed as the class can't be accessed from outside the file.
+
+## Section 8
+
+### Reference Types vs Value Types
+
+- nothing surprising, primitives are passed / assigned by value, Objects (such as Arrays) by reference
+- methods can dereference (=re-initialize) array references passed in parameters:
+- parameters are just copies of the pointers to the object
+
+      public static void doSomething(int[] array) {
+        array[2] = 2; // modifies array referenced by "array"
+        // overwrite / dereference reference LOCALLY
+        array = new int[] {1,2,3}; // creates new array and references it by "array"
+      }
+
+### Arrays
+- nothing surprising index-wise or standard properties like .length
+- can hold all types
+- typed (no mixed content)
+- Array initialization
+
+      // with sizing (all array elements are initialized to zero (0)):
+      int[] myArray = new int[10];
+      System.out.println(Arrays.toString((new int[5])));
+      // -> [0, 0, 0, 0, 0]
+      
+      // without values
+      String[] days;
+      
+      // with values:
+      String[] a = new String[] {"a","b","c"};
+      
+      // with values in an anonymous array:
+      String[] days = {"Monday","Tuesday"};
+      
+      // gets compiled but flagged by IDE (local c style array), why?
+      String days[];
+      String days[] = {"Monday", "Tuesday"};
+
+- Resizing arrays: 
+  - By hand: create new reference of original, dereference original variable and copy content of newly created reference in the dereferenced one
+  - Use array list (see next point)
+
+### List / ArrayList
+
+- ArrayList inherits from list (or rather AbstractList interface)
+- when adding values to ArrayList, capacity grows automatically
+- Ordered collection
+- Instantiate with Type in pointy brackets and constructor call with brackets
+- append with .add (single item) or .addAll (from collection / list)
+- instead of .length property as in arrays, use .size() method
+- access items by index with .get(index)
+- update with .set(index, newItem)
+- remove items with remove (overloaded to accept object to be removed or index (and probably more). 
+- more methods such as copying just see example code below
+- also a lot of useful .stream() methods  
+  
+      ArrayList<String> groceryList = new ArrayList<String>();
+      groceryList.add("Wurst");
+      groceryList.add("Bier");
+      groceryList.add("Coke");
+      System.out.println(groceryList.toString()); // [Wurst, Bier, Coke]
+      groceryList.set(2, "Whisky"); // [Wurst, Bier, Whisky]
+      groceryList.remove(1); // [Wurst, Whisky]
+      groceryList.remove("Wurst"); // [Whisky]
+      groceryList.contains("Whisky"); // true; "contains" returns just indexOf(obj) >= 0
+      
+      //ways to copy with addAll or ArrayList constructor:
+      ArrayList<String> newArrayList = new ArrayList<String>();
+      newArrayList.addAll(groceryList);
+      ArrayList<String> nextArray = newArrayList<String>(groceryList);
+      
+      // copy to array
+      String[] myArray = new String[groceryList.size()];
+      myArray = groceryList.getGroceryList().toArray(myArray); // needs array as param again
+
+### Sidenotes
+
+- "enhanced for loop" (basically foreach?):
+  
+      for(int i=0; i<arr.length; i++) { System.out.println(arr[i]); }
+      // is the same as (ACCESS only, changing "value" doesn't change the array)
+      // no index access possible like in most other languages foreach construct
+      for (int value : arr) {
+            System.out.println(value);
+      }
+
+- Copying array
+  - Arrays.copyOf(array, array.length)
+  - System.arraycopy
+  - arrayObj.clone()
+  - may more
+  - by hand
+- Array**s**.stream() has A LOT of useful / functional functions such as map, skip etc.
+- skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
+- Strg-Alt-M to extract selected code to method
