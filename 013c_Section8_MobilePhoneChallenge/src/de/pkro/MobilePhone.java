@@ -38,7 +38,7 @@ public class MobilePhone {
         return false;
     }
     public boolean updateContact(Contact oldContact,Contact newContact){
-        if(findContact(oldContact) >= 0){
+        if(findContact(oldContact) >= 0 && findContact(newContact.getName()) == -1){
             this.myContacts.set(findContact(oldContact),newContact);
             return true;
         }
