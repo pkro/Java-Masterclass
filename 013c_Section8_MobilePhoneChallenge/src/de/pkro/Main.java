@@ -75,7 +75,11 @@ public class Main {
         if (newNumber.isEmpty()) {
             newNumber = oldContact.getPhoneNumber();
         }
-        phone.updateContact(oldContact, new Contact(newName, newNumber));
+        if(phone.updateContact(oldContact, new Contact(newName, newNumber))) {
+            System.out.println("Contact updated");
+        } else {
+            System.out.println("Couldn't update contact (name already exists)");
+        }
     }
 
     private static void deleteContact() {

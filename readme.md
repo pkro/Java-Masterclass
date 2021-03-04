@@ -38,8 +38,8 @@
   - float min: 1.4E-45
   - float max: 3.4028235E38
 - **double**
-  - 64 bit (double precission)
-  - default for floating point numbers
+  - 64 bit (double precision)
+  - default for floating-point numbers
   - Faster to process than double in almost all cases
   - can be defined with d suffix for literal numbers (double d = 5d;)
   - double min: 4.9E-324
@@ -60,7 +60,7 @@
 
 ### Casting
 
-- Integers don't need to be explicitely cast to long
+- Integers don't need to be explicitly cast to long
 - Syntax:
 
       (type) value or variable;
@@ -398,7 +398,7 @@ In PC class:
   - Use array list (see next point)
 
 ### List / ArrayList
-
+- can only be used with classes, not primitives (use wrapper Integer etc. for that, see autoboxing below)
 - ArrayList inherits from list (or rather AbstractList interface)
 - when adding values to ArrayList, capacity grows automatically
 - Ordered collection
@@ -412,6 +412,8 @@ In PC class:
 - also a lot of useful .stream() methods  
   
       ArrayList<String> groceryList = new ArrayList<String>();
+      // explicit type specification in constructor can be left out:
+      ArrayList<String> anotherList = new ArrayList<>();
       groceryList.add("Wurst");
       groceryList.add("Bier");
       groceryList.add("Coke");
@@ -429,6 +431,18 @@ In PC class:
       // copy to array
       String[] myArray = new String[groceryList.size()];
       myArray = groceryList.getGroceryList().toArray(myArray); // needs array as param again
+
+      // foreach iteration also possible as in arrays:
+      for(String item: groceryList) {
+        System.out.println(item);
+      }
+
+### Autoboxing / Unboxing
+
+- primitive type ArrayLists must use wrapper class (<Integer>, <Float> etc)
+- explicit not necessary when adding values (autoboxing)
+- automatically converted back on access (unboxing)
+- both at compile time
 
 ### Sidenotes
 
@@ -449,4 +463,6 @@ In PC class:
   - by hand
 - Array**s**.stream() has A LOT of useful / functional functions such as map, skip etc.
 - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
-- Strg-Alt-M to extract selected code to method
+- Intellij:
+  - Strg-Alt-M to extract selected code to method
+  - select, copy, select other, right click + "compare with clipboard" = easy partial diff 
