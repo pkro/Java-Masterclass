@@ -404,6 +404,8 @@ In PC class:
 - Ordered collection
 - Instantiate with Type in pointy brackets and constructor call with brackets
 - append with .add (single item) or .addAll (from collection / list)
+  - java needs to move all elements after the inserted one up an index, this is slower than using a LinkedList where only 2 addresses need to be amended - see LinkedList section below
+- insert with add(index, item)
 - instead of .length property as in arrays, use .size() method
 - access items by index with .get(index)
 - update with .set(index, newItem)
@@ -422,7 +424,7 @@ In PC class:
       groceryList.remove(1); // [Wurst, Whisky]
       groceryList.remove("Wurst"); // [Whisky]
       groceryList.contains("Whisky"); // true; "contains" returns just indexOf(obj) >= 0
-      
+      groceryList.add(0, "Milk"); // [Milk, Whisky]
       //ways to copy with addAll or ArrayList constructor:
       ArrayList<String> newArrayList = new ArrayList<String>();
       newArrayList.addAll(groceryList);
@@ -444,6 +446,64 @@ In PC class:
 - automatically converted back on access (unboxing)
 - both at compile time
 
+### LinkedList
+- works like every linked list (val, next) + tons of methods
+- is implemented in java as doubly linked list to allow for moving back and forward
+- performant for inserting items 
+- instantiation like ArrayList, *boxing applies
+- Storage in memory:
+  - Primitives: Java calculates memory position by max amount of bytes the given *primitive* type requires and stores them directly:
+    ![Linked list with primitives](images/linkedlistprimititves.png "Linked list with primitives")
+    - this makes it possible to quickly look up items by index as a formula to calculate the memory address can be used: base address + (primitive type byte size) * index 
+  - For objects (such as strings), the *address* of the object is saved in the linkedlist:
+    ![Linked list with objects](images/linkedlistobjects.png "Linked list with objects")
+    - same easy index calculation possible despite variable length
+  - how is that something worth mentioning specifically for linked lists? Isn't this the basic distinction of how primitives and objects are stored / passed?
+- Iterate using enhanced for (recommended) or explicitely with iterator
+
+      LinkedList<String> placesToVisit = new LinkedList<>();
+      placesToVisit.add("Sydney");
+      placesToVisit.add("Brisbane");
+      placesToVisit.add(1, "Perth"); // insert at 1 and move other entries "up"
+      placesToVisit.remove(1);
+      // iterator
+      Iterator<String> i = placesToVisit.iterator();
+      while (i.hasNext()) {
+        System.out.println(i.next());
+      }
+
+      // enhanced for
+      for (String s : placesToVisit) {
+        System.out.println(s);
+      }
+
+- use ListIterator to be able to move back with iterator and added functionality
+      
+      // this method should rather work on a copy of the list to avoid side effects,
+      // but for brevity's sake this alters the passed LinkedList itself
+      private static boolean addInOrder(LinkedList<String> linkedList, String city) {
+        ListIterator<String> stringListIterator = linkedList.listIterator();
+  
+        while(stringListIterator.hasNext()) {
+            int comparison = stringListIterator.next().compareTo(city);
+            if(comparison==0) {
+                // equal, don't add
+                System.out.println(city + " is already included");
+                return false;
+            } else if(comparison > 0) {
+                // new city should appear before the current one
+                stringListIterator.previous(); // go back
+                stringListIterator.add(city);
+                return true;
+            }
+        }
+        stringListIterator.add(city); // the end
+        return true;
+      }
+
+- iterator.getFirst() gets first entry from iterator without moving it like news()
+- java ListIterator is implemented in a way to avoid recursive loops in structures, so the iterator is acutally "in between" two list nodes and not "On" one; (one) solution is to keep track of the direction the iterator is moving and doing an additional "next()" or "previous()" to move back and forth with the iterator 
+
 ### Sidenotes
 
 - "enhanced for loop" (basically foreach?):
@@ -464,5 +524,8 @@ In PC class:
 - Array**s**.stream() has A LOT of useful / functional functions such as map, skip etc.
 - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
 - Intellij:
+  - ctrl-shift-enter completes statement, adds ; at end and goes to next line
+  - shift-enter to insert and go to next line without breaking current line 
   - Strg-Alt-M to extract selected code to method
-  - select, copy, select other, right click + "compare with clipboard" = easy partial diff 
+  - select, copy, select other, right click + "compare with clipboard" = easy partial diff
+- reminder iterator protocol: the first call to iterator.next() actually goes to the first entry, NOT to the second 
