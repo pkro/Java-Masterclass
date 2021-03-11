@@ -1,0 +1,54 @@
+package de.pkro;
+
+import java.util.ArrayList;
+
+public class Team {
+    private String name;
+    int played = 0;
+    int won = 0;
+    int lost = 0;
+    int tied = 0;
+
+    ArrayList<Player> members = new ArrayList<>();
+
+    public Team(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean addPlayer(Player player) {
+        if (!members.contains(player)) {
+            System.out.println("Added " + player.getName() + " to team " + name);
+            return members.add(player);
+        }
+        System.out.println("Player already on team");
+
+        return false;
+    }
+
+    public int numPlayers() {
+        return this.members.size();
+    }
+
+    public void matchResult(Team oponent, int ourScore, int theirScore) {
+        int res = ourScore - theirScore;
+        if (ourScore > theirScore) {
+            won++;
+        } else if (ourScore < theirScore) {
+            lost++;
+        } else {
+            tied++;
+        }
+
+        if (oponent != null) {
+            oponent.matchResult(null, theirScore, ourScore);
+        }
+    }
+
+    public int ranking() {
+        return won * 2 + tied;
+    }
+}

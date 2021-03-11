@@ -106,7 +106,7 @@
 - nothing noteworthy otherwise at this point
 
 ### DiffMerge Tool
-**this**
+
 - what it says; use something better.
 
 ### Methods overloading
@@ -200,6 +200,7 @@
   - not all variables that are necessary for validation of another value might have been initialized
 
 ### Inheritance
+- a class can have only one superclass (but can implement multiple interfaces, see section 9 below)
 - all classes inherit from `Object`
 - `public class XXX extends YYY {[...]}`
 - constructor call with super
@@ -226,6 +227,7 @@
 - **super()**: Java puts a default call to super() in the constructor to call the argument-less constructor of the parent class if we don't add it ourselves
 - the **super()** call must be the first statement in the constructor if it's done explicitely
 - Even abstract classes have a constructor
+- Don't put @Override over constructor
 - A constructor can have a call to super() or this() but not both
 
 ### Overloading / Overriding
@@ -503,6 +505,12 @@ In PC class:
 
 - iterator.getFirst() gets first entry from iterator without moving it like news()
 - java ListIterator is implemented in a way to avoid recursive loops in structures, so the iterator is acutally "in between" two list nodes and not "On" one; (one) solution is to keep track of the direction the iterator is moving and doing an additional "next()" or "previous()" to move back and forth with the iterator 
+- Arrays are collection based and not a valid argument for .addAll or in the List constructor; use Array.asList as a bridge:
+  
+      // with explicit array creation
+      list.addAll(Arrays.asList(new String[]{name, Integer.toString(hitPoints), Integer.toString(strength), weapon}));
+      // without (asList is overloaded):
+      list.addAll(Arrays.asList(name, Integer.toString(hitPoints), Integer.toString(strength), weapon));
 
 ### Sidenotes
 
@@ -524,8 +532,466 @@ In PC class:
 - Array**s**.stream() has A LOT of useful / functional functions such as map, skip etc.
 - skipping first value: `String[] days = Arrays.stream(javaDays).skip(1).toArray(String[]::new);`
 - Intellij:
+  - alt-j for multi selection (ctrl-d in vscode)
   - ctrl-shift-enter completes statement, adds ; at end and goes to next line
   - shift-enter to insert and go to next line without breaking current line 
   - Strg-Alt-M to extract selected code to method
   - select, copy, select other, right click + "compare with clipboard" = easy partial diff
 - reminder iterator protocol: the first call to iterator.next() actually goes to the first entry, NOT to the second 
+
+## Section 9
+
+### Interfaces
+
+- define behavior of class without implementations, just define the methodss
+- commitment that the class interfaces (method return types, signatures etc) will not change
+- public is redundant for interface methods and can/should be left out
+- use good interface names, e.g.:
+  - ISaveable (don't do the prefix anymore as IDEs show if a file is an interface these days)
+  - Saveable
+  - CanSave
+  
+**I**Telephone.java:
+
+      public interface ITelephone {
+        // these methods must be implemented by classes implementing it
+        public void powerOn();
+        public void dial(int phoneNumber);
+        public void answer();
+        public boolean callPhone(int phoneNumber);
+        public boolean isRinging();
+      }
+
+DeskPhone.java:
+
+      public class DeskPhone implements ITelephone {
+        int myNumber;
+        //...
+    
+    
+        public DeskPhone(int myNumber) {
+            this.myNumber = myNumber;
+            // ...
+        }
+    
+        @Override
+        public void powerOn() {
+            isPowered = true;
+        }
+        @Override
+        public void dial(int phoneNumber) {
+            System.out.println("Dialing " + phoneNumber);
+        }
+    
+        @Override
+        public void answer() {
+              //...
+        }
+    
+        @Override
+        public boolean callPhone(int phoneNumber) {
+          //...
+        }
+    
+        @Override
+        public boolean isRinging() {
+            return isRinging;
+        }
+      }
+
+- Interface *can* be used as type:
+
+      ITelephone timsPhone = new DeskPhone(123456);
+      DeskPhone anotherPhone = new DeskPhone(34455);
+
+- NOT valid (unless implementing an inner / inline class):
+
+      ITelephone timsPhone = new ITelephone(123456);
+
+- example java library: LinkedList, ArrayList, Vector and other list types use List interface, so by declaring List for object and parameter types the actual list implementation can be changed easily
+- Lists should generally be declared with the generic interface List to make implementations more flexible (can use any subclass of List), even omitting type declaration:
+      
+      // probably too narrowly defined types:
+      public interface ISaveable {
+        ArrayList<String> write();
+        void read(ArrayList<String> savedValues);
+      }
+
+      // probably better to allow flexible use and implementation:
+      public interface ISaveable {
+        List write();
+        void read(List savedValues);
+      }
+
+- If the class has a method not defined in the interface, and the object was declared using the Interface type, the object must be cast to the class type to call the method:
+
+      ISaveable werewolf = new Werewolf();
+      werewolf.save(); // ok as save() is defined in interface
+      werewolf.changeToSpookyForm(); // NOT ok as changeToSpookyForm is werewolf class specific
+      ((Werewolf) werewolf).changeToSpookyForm(); // OK
+  
+- Interface or inheritance from superclass?
+  - Depends: mobile phone is a computer that can also be used as a phone, so it *can* do the things a telephone does but much more, so an interface is the best choice here
+  - In java a class can have only **one** superclass, but multiple interfaces, so, again, a mobile phone could inherit from ITelephone and IComputer
+  - "Animal" example:
+    - Bird extends Animal implements IFly implements IWalk
+    - Dog extends Animal implements IWalk
+    
+### Inner classes
+
+#### non static nested class:
+
+      public class Gearbox {
+      private ArrayList<Gear> gears;
+      private int gearNumber = 0;
+      // ...
+          public Gearbox(int maxGears) {
+              this.gears = new ArrayList<>();
+              
+              // ...
+          }
+  
+          private class Gear {
+            private int gearNumber = 5; // shadows parent classes gearNumber variable
+            gearNumber = Gearbox.gearNumber; // this.gearNumber is now 0
+              // ...
+          }
+      }
+
+- use when class doesn't make sense without the context of the outer class (in the example, Gear will only ever be instantiated by Gearbox)
+- can improve encapsulation  
+- outer class variables can be accessed directly if no naming conflict exists
+  - *best to use unique names to avoid confusion and hard to find bugs caused by variable shadowing*
+- explicit instantiation of inner class (only possible with instance of enclosing class) with .new:
+
+      Gearbox mcLaren = new Gearbox(6);
+      Gearbox.Gear first = mcLaren.new Gear(1, 12.3);
+      // new Gearbox.Gear(...) is not possible, neither is new mcLaren.Gear(...)
+
+  - this is normally not necessary as it contradicts making it an inner class in the first place
+  - best practice would be to make inner class private to avoid external instantiation
+  
+#### inner class implementing an inner interface from another class 
+
+- an inner interface gives a template to create a class that is only of concern in the context of the outer class
+- example Section 9 inner classes button: 
+    
+      // Button.java
+      public class Button {
+        private String title;
+        private OnClickListener onClickListener;
+        // ...
+        public interface OnClickListener {
+            public void onClick(String title);
+        }
+      }
+  
+      // Main.java
+      public class Main {
+        private static Button btnPrint = new Button("yay button print");
+        // ...
+        public static void main(String[] args) {
+            // ...
+            // local class implements Buttons inner OnClickListener interface
+            class ClickListener implements Button.OnClickListener {
+              public ClickListener() {
+                  System.out.println("I've been attached");
+              }
+    
+              @Override
+              public void onClick(String title) {
+                  System.out.println(title + " was clicked");
+              }
+            }
+          }
+        }
+        
+        btnPrint.setOnClickListener(new ClickListener());;
+      }
+
+#### anonymous classes
+
+- have to be declared and instantiated at the same time, similar to javascript anonymous classes
+- very common for attaching event handlers
+
+      anotherButton.setOnClickListener(new Button.OnClickListener() {
+        @Override
+        public void onClick(String title) {
+        System.out.println("Anonymous event listener class onClick event");
+        }
+      });
+
+#### abstract classes
+- keyword abstract
+- class that defines method definitions like interfaces but implements *some* methods
+- can't be used on its own, needs to be inherited from and forces ancestor class to implement the missing methods
+- private vars / methods not accessible in child class (like always), use protected if needed
+
+      public abstract class Animal {
+      private String name;
+      
+          public Animal(String name) {
+              this.name = name;
+          }
+      
+          public abstract void eat(); // needs implementation
+          public abstract void breathe(); // needs implementation
+      
+          public String getName() {
+              return name;
+          }
+      }
+
+      public class Dog extends Animal {
+        // constructor needs to be implemented
+        public Dog(String name) {
+          super(name);
+        }
+        @Override
+        public void eat() {
+          System.out.println("Dog "+getName()+" eating");
+        }
+      
+        @Override
+        public void breathe() {
+          System.out.println("Dog "+getName()+" breathing");
+        }
+      }
+
+- Abstract classes can inherit from abstract classes:
+      
+      // Bird.java 
+      public abstract class Bird extends Animal {
+          public Bird(String name) {
+            super(name);
+          }
+      
+          @Override
+          public void eat() {
+              System.out.println("Bird "+getName()+" eating");
+          }
+      
+          @Override
+          public void breathe() {
+              System.out.println("Bird "+getName()+" breathing");
+          }
+          
+          // for examples sake - this should actually better be in an interface as bats and flies can fly too
+          public abstract void fly();
+      }
+
+      // Parrot.java
+      public class Parrot extends Bird {
+        public Parrot(String name) {
+          super(name);
+        }
+      
+        @Override
+        public void fly() {
+            System.out.println("Parrot can't fly");
+        }
+      }
+
+- As with interfaces, the parent abstract class can be used as a type:
+
+      Bird parrot = new Parrot("sparrow");
+
+#### Interface vs abstract class
+
+- Interface: 
+  - has-a relationship (player has a save method)
+  - just declaration, no implementation **since Java 8 also `default` methods with implementations**
+  - can only have public static final variables
+  - all methods in interfaces are automatically public and abstract **since Java 9 also private methods (commonly used when 2 default methods in an interface share common code)**
+  - can only have abstract methods
+  - A class can implement multiple interfaces
+  - decouples "what" from "how" 
+  - Use when:
+    - designing the program (rather than the implementation)
+    - expect unrelated classes to implement the interface (many things can be "saveable")
+    - good example: Collections API, JDBC API
+  
+- Abstract class: 
+  - is-a relationship (player is a GameActor)
+  - can have member variables, constructors
+  - can have any visibility (public, private, protected)
+  - can have both abstract and implemented methods
+  - A class can inherit only from one abstract class
+  - if the sublcass doesn't implement all abstract methods, it must be an abstract class itself
+  - Use when:
+    - share code / member variables among several closely related classes
+    - subclass is expected to have many common methods / members or requires access modifiers other than public
+  
+- both:
+  - can't be instantiated by themselves
+  
+### Sidenotes 
+
+- Intellij: set up emmet like abreviations under settings->editor->live templates, e.g. scn -> Scanner scanner = new Scanner(System.in);
+- Intellij: ctrl-d to duplicate selected text
+- Intellij: alt-6 show problems
+- Intellij: enable multiple windows: File -> Settings -> Appearance and Behavior -> System Settings
+
+## Section 10 generics (since java 1.5)
+
+- Use to catch errors at compile time as opposed to hard to catch runtime errors
+- ArrayList can be defined without type (then the default type is "Object" which can hold anything)
+- this can lead to runtime errors if incompatible types are cast:
+
+      public static void main(String[] args) {
+        ArrayList items = new ArrayList();
+        items.add(1);
+        items.add("Jack");
+        items.add(3);
+        for (Object i: n) {
+          System.out.println((Integer) i*2); // runtime error on second item
+        }
+      }
+    
+      
+- intellij warns of using raw types
+- use <> to indicate type to catch runtime errors:
+
+      // ArrayList<Integer> items = new ArrayList<Integer>();
+      // best way (Java 7+, "diamond operator"): 
+      ArrayList<Integer> items = new ArrayList<>();
+      items.add(1);
+      items.add("Jack"); // compile error, can be caught by IDE
+
+      for (Object i: n) {
+        System.out.println(i*2); // casting not necessary anymore
+      }
+
+### Adding generics to own class
+
+Before - this class allows to add any subclass of player regardless what sports team it is:
+
+    public class Team {
+      private String name;
+      ArrayList<Player> members = new ArrayList<>();
+  
+      public Team(String name) {
+          this.name = name;
+      }
+  
+      public boolean addPlayer(Player player) {
+          // ...
+      }
+
+      public void matchResult(Team opponent, int ourScore, int theirScore) {
+        // ...
+      }
+    }
+    
+    
+
+    Team adelaide = new Team("Adelaide crows");
+    adelaide.addPlayer(new FootballPlayer("Joe"));
+    adelaide.addPlayer(new BaseballPlayer("pat"));
+
+After - class must be initialized with the correct player type:
+
+    public class Team<T> {
+      private String name;
+      ArrayList<T> members = new ArrayList<>();
+  
+      public Team(String name) {
+          this.name = name;
+      }
+  
+      public boolean addPlayer(T player) {
+          // ...
+      }
+      
+      public void matchResult(Team<T> opponent, int ourScore, int theirScore) {
+        // ...
+      }
+    }
+
+    Team<FootballPlayer> adelaide = new Team<>("Adelaide crows");
+    adelaide.addPlayer(new FootballPlayer("Joe"));
+    adelaide.addPlayer(new BaseballPlayer("pat")); // compile error
+
+`<T>` is a placeholder for the concrete type given on initialisation.
+
+Problem: this compiles fine but leads to runtime errors when initialising with a non-compatible type (such as String) and trying to cast a non-player type to Player;
+
+    Team<String> adelaide = new Team<>("Works fine...");
+    adelaide.addPlayer(new String("Throws error at runtime if cast to player"));
+    
+Solution: restrict type of class by using **bounded type parameters** using `extends`:
+
+    public class Team<T extends Player> { //... }
+    Team<String> noworky = new Team<>("compile error");
+
+Now the upper bound of Team is the player class.
+
+- type given on initialisation can be class or interface
+- Interfaces can specify type parameters as well
+- allows multiple types (bounds) (1 class and multiple interfaces):
+    
+      // Player = class, Coach, Manager = Interfaces
+      public class Team<T extends Player & Coach & Manager>
+
+- implementing an interface with type:
+
+      public class Team<T extends Player> implements Comparable<Team<T>>
+
+- multiple type generic Types are possible in class definition to enforce initialisation with specific combinations:
+
+      public class Team<U extends Player, T extends Team> {...}
+      League<FootballPlayer, Team<FootballPlayer>> league = new League<>("only footballers");
+
+      // or just (easier):
+      public class Team<T extends Team> {...}
+      League<Team<BaseballPlayer>> baseballLeague = new League<>("the baseballers");
+
+### Sidenotes
+
+- Collections.sort uses the compareTo method implemented from the Comparable interface
+  - sorts in-place
+  - descending: `Collections.sort(teams, Collections.reverseOrder());`
+- String repeat method (Java 11): `System.out.println(name + "\n" + "=".repeat(name.length()));`
+- Pre- Java 11: `repeated = new String(new char[n]).replace("\0", s);`
+- Apache commons for a lot of String, array and more utilities: [**https://commons.apache.org/**](https://commons.apache.org/)
+
+## Section 11
+
+### Naming conventions
+
+#### Packages
+
+- always lower case
+- unique
+- internet domain name reversed as prefix (de.pkro.mypackage), no dashes / starting numbers (replace / prepend with _), start with _ if it clashes with java keyword
+  - e.g. 1-world.com -> com._1_world
+  
+#### Class names
+
+- CamelCase, UcFirst
+- should be nouns
+
+#### Interfaces
+
+- UcFirst
+- Consider what object implementing the interface will become / be able to do:
+  - List
+  - Comparable
+  - Serializable
+  - etc.
+  
+#### Method names
+
+- mixedCase
+- often verbs
+
+#### Constants (static final)
+
+- all uppercase
+- _ to separate (e.g. MAX_CASE)
+
+#### variable names
+
+- mixedCase
+- no underscores
+
