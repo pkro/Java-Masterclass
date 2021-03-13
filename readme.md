@@ -2,6 +2,9 @@
 
 ## 3. First steps
 
+- basic command line compilation (from src directory): `javac -cp . de/pkro/Main.java`
+  - cp: classpath, current directory so packages used in main can be found
+  
 - **Primitive types are passed by value, Objects by reference; the original object can be changed (if it's not immutable) when passed as a parameter to a method**
 
 ### 8 primitive types
@@ -48,11 +51,11 @@
 ### Strings
 
 - Class (not a primitive)
-- concatenation with + works without explicit casting (`"dfsdfds" + 5;` is fine); 
+- concatenation with + works without explicit casting (`"dfsdfds" + 5;` is fine);
 - "+" concatenation is inefficient, use StringBuffer
 - immutable
 
-### Sidenotes: 
+### Sidenotes
 
 - constants in Java are defines as **static** (can be used without creating class instance) **final** (can't change): `private static final double KG_FACTOR = 0.45359237d;`; Must be defined in *class*, not in method
 - for precise fp calculations, **BigDecimal** should be used
@@ -68,10 +71,12 @@
 
 
 ## Section 4 OperatorsExpressions, Statements, Code blocks
+
 - use camel case, even for abreviations (correct: XmlHttpRequest, incorrect: XMLHTTPRequest)
 - methods and variables start with lowercase, classes with uppercase
 
 ### Operators
+
 - left / right associative as usual; "=" -> right associative, '+' or '-' left associative
 - type comparison: **instanceof**
 - precedence: as usual, https://introcs.cs.princeton.edu/java/11precedence/
@@ -122,6 +127,7 @@
 - switch, for, while, do while: nothing unexpected; String type switch added Java 7+
 
 ### String / number conversions
+
 - Integer.parseInt() / Double.parseDouble etc.; throws exception if not a valid (integer|double|...) format
 - concatenating int to string with "+" automatically converts the int
 
@@ -154,6 +160,7 @@
       }
 
 ### Sidenotes
+
 - Example date / formatting / conversion: Condensed getting current year:
   
   `int currentYear = Integer.parseInt(new SimpleDateFormat("YYYY").format(new Date(System.currentTimeMillis())));`
@@ -177,6 +184,7 @@
 ### Constructor
 
 - method with only access modifier (always public), *no return type* and method name = class name
+  - can actually be set to private to make it impossible to instantiate the class, example: Math
 - to overload a constructor with a constructor that assigns default values, call the constructor that accepts values with "**this**":
 
       // all parameters
@@ -200,6 +208,7 @@
   - not all variables that are necessary for validation of another value might have been initialized
 
 ### Inheritance
+
 - a class can have only one superclass (but can implement multiple interfaces, see section 9 below)
 - all classes inherit from `Object`
 - `public class XXX extends YYY {[...]}`
@@ -233,6 +242,7 @@
 ### Overloading / Overriding
 
 #### Overloading
+
 - Overloading is sometimes refered to as compile time polymorphism (though it isn't polymorphism in the inheritance sense)
 - both static and instance methods can be overloaded
 - Overloaded = same method name but different parameters, **may or may not** have different return types / access modifiers / exceptions
@@ -372,6 +382,7 @@ In PC class:
       }
 
 ### Arrays
+
 - nothing surprising index-wise or standard properties like .length
 - can hold all types
 - typed (no mixed content)
@@ -400,6 +411,7 @@ In PC class:
   - Use array list (see next point)
 
 ### List / ArrayList
+
 - can only be used with classes, not primitives (use wrapper Integer etc. for that, see autoboxing below)
 - ArrayList inherits from list (or rather AbstractList interface)
 - when adding values to ArrayList, capacity grows automatically
@@ -411,7 +423,7 @@ In PC class:
 - instead of .length property as in arrays, use .size() method
 - access items by index with .get(index)
 - update with .set(index, newItem)
-- remove items with remove (overloaded to accept object to be removed or index (and probably more). 
+- remove items with remove (overloaded to accept object to be removed or index (and probably more).
 - more methods such as copying just see example code below
 - also a lot of useful .stream() methods  
   
@@ -443,12 +455,13 @@ In PC class:
 
 ### Autoboxing / Unboxing
 
-- primitive type ArrayLists must use wrapper class (<Integer>, <Float> etc)
+- primitive type ArrayLists must use wrapper class (`<Integer>, <Float> etc`)
 - explicit not necessary when adding values (autoboxing)
 - automatically converted back on access (unboxing)
 - both at compile time
 
 ### LinkedList
+
 - works like every linked list (val, next) + tons of methods
 - is implemented in java as doubly linked list to allow for moving back and forward
 - performant for inserting items 
@@ -480,7 +493,7 @@ In PC class:
       }
 
 - use ListIterator to be able to move back with iterator and added functionality
-      
+
       // this method should rather work on a copy of the list to avoid side effects,
       // but for brevity's sake this alters the passed LinkedList itself
       private static boolean addInOrder(LinkedList<String> linkedList, String city) {
@@ -959,39 +972,155 @@ Now the upper bound of Team is the player class.
 
 ### Naming conventions
 
-#### Packages
-
-- always lower case
-- unique
-- internet domain name reversed as prefix (de.pkro.mypackage), no dashes / starting numbers (replace / prepend with _), start with _ if it clashes with java keyword
-  - e.g. 1-world.com -> com._1_world
+- **Packages**: always lower case, unique, internet domain name reversed as prefix (de.pkro.mypackage), no dashes / starting numbers (replace / prepend with _), start with _ if it clashes with java keyword ,e.g. 1-world.com -> com._1_world
+- **Class names**: CamelCase, UcFirst, should be nouns
+- **Interfaces**: UcFirst
+  - Consider what object implementing the interface will become / be able to do:
+    - List
+    - Comparable
+    - Serializable
+    - etc.
+- **Method names**: mixedCase, often verbs
+- **Constants (static final)**: all uppercase, _ to separate (e.g. MAX_CASE)
+- **variable names**: mixedCase, no underscores
+- **Type parameters**: Single character, capital letters e.g. 
+  - E - Element (used extensively by Java Collections Framework)
+  - K - key
+  - T - type
+  - V - value
+  - S, U, V etc. -2nd, 3rd etc. types
   
-#### Class names
+### Packages
 
-- CamelCase, UcFirst
-- should be nouns
+- bundles related packages
+- stored physically on folder structure: /src/com/example/mypackage
+- creates new namespace, avoids naming conflicts
+- classes within package have unrestricted access to one another (but still restrict access from classes outside the package)
+- Types / classes don't *have* to be imported on top but can be used with the fully qualified name in code: `javafx.scene.Node node = null;`
+- this has to be done if multiple packages with the same Class have to be used (e.g. javafx.scene.Node AND org.w3c.dom.Node)
+- namespace TLD.Domain.[...more subdomains].packagename
+- `.*` doesn't add "sub-packages" automatically as they are *different* packages:
 
-#### Interfaces
+      import java.awt.*;
+      import java.awt.event.WindowAdapter; // still necessary
+      import java.awt.event.WindowEvent; // (or use import java.awt.event.*)
 
-- UcFirst
-- Consider what object implementing the interface will become / be able to do:
-  - List
-  - Comparable
-  - Serializable
-  - etc.
+- when importing with `.*` from multiple packages, name clashes can occur if they contain classes of the same name
+- com.example can be used for packages that aren't distributed
+- Intellij: create folder structure automaticaly by naming class with package: `com.example.game.Player`
+
+#### creating a jar file from a package:
+
+- File -> project structure -> artefacts -> + button -> JAR -> From module with dependencies
+- Indicate main class to make executable if desired
+- extract to target jar
+- ok
+- build -> build artefacts -> build
+- jar is created in /out/artifacts/
+
+#### Use the created package (new project or existing):
+
+- File -> projects structure -> libraries -> + button (java) -> go to folder and select .jar file
+- library is accessible in project and visible under External Libraries in project pane
+ 
+### Scope
+
+- pretty much like javascript (in case of let / const, NOT var)
+- block scope
+- variables declared in local block of same name shadow variables in higher scope
+- member variables (class level) of same name can still be accessed with `this.` prefix
+- with inner classes, enclosing class member variables can be accessed `ParentClassName.this.variableName`, e.g. `ScopeCheck.this.privateVar`
+  - same goes for calling enclosing class methods
+- for loop variable is in loop scope (though not technically in {} )
+- enclosing class can access private variables of inner class (with instantiation):
+      
+      public class ScopeCheck {
+        public void useInner() {
+          InnerClass inner = new InnerClass();
+          System.out.println("InnerClass varThree=" + inner.varThree);
+        }
+        
+        public class InnerClass {
+          private int varThree = 3;
+        }
+      }
   
-#### Method names
+### Access modifiers
 
-- mixedCase
-- often verbs
+#### Top Level
 
-#### Constants (static final)
+- only classes, interfaces and enums can exist at top level
+- public: visible to all classes in- and outside package
+- package-private: only available within its own package; default if not explicitely declared with "public" (no "package-private" keyword exists)
 
-- all uppercase
-- _ to separate (e.g. MAX_CASE)
+#### Member level
 
-#### variable names
+- public: same as at top level (access anywhere)
+- private: only accessible within the class; not possible for members in interfaces
+- protected: accessible within the class and subclasses
 
-- mixedCase
-- no underscores
+### static
+
+- static field is associated with class and not instance (but are also accessible and changeable by non-static methods of the class)
+- static methods can only be called with classname.method(), not instanceName.method()
+- main() as the application's entry point has to be static because there are no class instances at this point yet (by convention defined in class Main)
+- non-static member variables and methods can't be accessed from static methods (main) because **when main is run, no instance exists yet**
+- the reverse is not true (static methods and members can be accessed fine by non-static methods)
+
+### final
+
+- can be set / initialized only in declaration or in constructor (but NOT both); unchangable after constructor finishes
+- basically a (possibly computed, so not at compile time) constant / immutable member variable
+- for example giving "unique id" to an instance, see 016_section_11_access_modifiers, SomeClass.java
+- for constants, use `static final` as there will be no need for a copy of a constant in an instance; they follow the same rules as other final variables in terms of declaration, meaning they can be computed as well. 
+- class can be final; prevents from being subclassed. Example: Math is declared final (can't be inherited from) AND the constructor is private (can't be instantiated), so it can be ONLY used statically
+- make methods final that should not be overridden
+
+### static initialization blocks
+
+- rarely used; best explained by code:
+
+      public class StaticInitializationBlockTest {
+        public static final String owner;
+        static {
+            owner = "Peer";
+            System.out.println("Static initialization block called");
+        }
+        public StaticInitializationBlockTest() { // constructor
+            System.out.println("Constructor called");
+        }
+        static {
+            System.out.println("Second Static initialization block called");
+        }
+        // ....
+      }
+      
+      StaticInitializationBlockTest sib = new StaticInitializationBlockTest();
+      // Static initialization block called
+      // Second Static initialization block called
+      // Constructor called
+      
+
+
+### Sidenotes
+
+- Intellij: ctrl-click on method (or ctrl-b when cursor is on method) goes to definition
+
+
+
+
+
+
+
+## Section 13 - Javafx
+
+### Should I learn it?
+
+- maybe rather skip this and do a spring course instead
+
+### Installation
+
+- not bundled with Java > 8
+- Download sdk for OS at https://gluonhq.com/products/javafx/
+- ctrl-shift-alt-s -> global libraries -> navigate to lib, select all .jar files, add
 

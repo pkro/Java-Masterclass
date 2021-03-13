@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="016_challenge_Series:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/016_challenge_Series_jar</output-path>
+    <root id="archive" name="016_challenge_Series.jar">
+      <element id="module-output" name="016_challenge_Series" />
+    </root>
+  </artifact>
+</component>
