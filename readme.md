@@ -19,6 +19,7 @@
   - must use single quotes: `char myChar = 'D';`
   - width: 16 bit (unicode)
   - unicode assignments are valid: `char arrow = '\U+2190';`
+  - is an int internally and can be used in calculations and loops (`for(char c = 'A'; c <= 'Z'; c++)`) 
 - short
   - width: 16 bit
   - -32768 - 32767
@@ -220,7 +221,7 @@
           }
       }
 
-- override methods with **@Override (optional**, hint for compiler / IDE to catch errors when efining overridden methods):
+- override methods with **@Overri (optional**, hint for compiler / IDE to catch errors when efining overridden methods):
 
       @Override
       public void eat() {
@@ -426,6 +427,7 @@ In PC class:
 - remove items with remove (overloaded to accept object to be removed or index (and probably more).
 - more methods such as copying just see example code below
 - also a lot of useful .stream() methods  
+- making a copy of a list using a list constructor returns a *shallow* copy: `List<Theater.Seat> seatsCopy = new ArrayList<Theater.Seat>(theater.seats);`
   
       ArrayList<String> groceryList = new ArrayList<String>();
       // explicit type specification in constructor can be left out:
@@ -1107,10 +1109,95 @@ Now the upper bound of Team is the player class.
 - Intellij: ctrl-click on method (or ctrl-b when cursor is on method) goes to definition
 
 
+## Section 12 - Collections
 
+### Lists
 
+- *"unified architecture for representing and manipulating collections."* - (https://docs.oracle.com/javase/tutorial/collections/)
+- Core collection Interfaces:
+![Core collection interfaces](images/core_collection_interfaces.png "Core collection interfaces")
+- designed for interoperability / compatibility with each other and other types (ArrayList, LinkedList); valid: `private Collection<Seat> seats = new LinkedList<>();`
+- implement comparable to be able to use efficient static search / sort / reverse etc. methods from Collections framework:
+      
+      // Seat class must implement Comparable, seats is an ArrayList of Seats
+      int foundSeat = Collections.binarySearch(seats, requestSeat, null);
 
+- static methods covered: Collections.shuffle, min, max, sort, reverse, binarySearch, swap
+- to make a method accept a List of a certain class AND its subclasses, a wildcard can be used:
 
+      public static void sortList(List<? extends Theater.Seat> list)
+
+### Exkurs: Comarable / Comparator
+
+If a class doesn't implement comparator, a comparator can be passed to the Collections.sort (revere, etc.) method:
+      
+      // this one is defined in the parent class 
+      // Theater in this case as a static (and final) method
+      // because the inner class is usually private 
+      static final Comparator<Seat> PRICE_ORDER = new Comparator<Seat>() {
+        @Override
+        public int compare(Seat seat1, Seat seat2) {
+          if(seat1.getPrice() < seat2.getPrice()) {
+            return -1;
+          }
+          else if(seat1.getPrice() > seat2.getPrice()) {
+            return 1;
+          }
+        return 0;
+        }
+      };
+
+      // usage:
+      Collections.sort(seatsCopy, Theater.PRICE_ORDER);
+
+Also check what intellij does if you click on the "split into declaration and initialisation" suggestion for an example of a static initialisation block as shown in the section above
+
+"ordering being consistent with equal" in the Java Collections documentation means the comparator should only return 0 if the objects are actually equal (so a comparator that only compares one of many members doesn't compare for actual equality)
+
+### Maps
+
+- maps keys to values, (can) use generics, replaces dictionaries
+- keys should be immutable (intellij / java will complain if not), e.g. objects
+- not ordered 
+- myMap.put(key, value) returns the previous value associated with the key
+- self explaining: .containsKey, containsValue, 
+- replace(key, newVal) or replace(key, oldVal, newVal) replaces only if key (or key value pair) exists, returns previous value
+- .remove(key) or .remove(key, value) for specific key-val combinations (returns boolean) 
+- specify key and value types in declaration:
+
+      // String key, String value:
+      Map<String, String> languages = new HashMap<>();
+      languages.put("Java", "a compiled high level oo language");
+
+      // don't forget to add it in the parameter signature for methods too:    
+      public static void printMap(Map<String, String> m) {
+        for(String key: m.keySet()) {
+            System.out.printf("%10s: %-15s\n", key, m.get(key));
+            //System.out.println(key + ": " + languages.get(key));
+        }
+      }
+
+### Immutable classes
+
+Protects classes / members from changes (e.g. by plugins or user-side code like in excel)
+
+Some techniques:
+
+- returning copies of class members:
+  
+      public Map<String, Integer> getExits() {
+        // return copy so outside code can't change HashMap
+        // (though object references could still be changed)
+        return new HashMap<String, Integer>(exits);
+      }
+- making fields `private final`; makes it clear that it shouldn't be changed and ensures no accidental modification
+- only provide setters where necessary
+  
+### Sideonetes
+
+- Intellij: psvm => public static void main(....)
+- Intellij: if more than one class has a main method, it can be run by right clicking in the code and selecting "run Blah.main" or ctrl-shift-f10
+- convert char to uppercase (in this example while reading it in): `Character.toUpperCase((char) scanner.nextInt());`
 
 ## Section 13 - Javafx
 
