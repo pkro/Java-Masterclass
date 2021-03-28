@@ -1163,7 +1163,8 @@ Also check what intellij does if you click on the "split into declaration and in
 - myMap.put(key, value) returns the previous value associated with the key
 - self explaining: .containsKey, containsValue, 
 - replace(key, newVal) or replace(key, oldVal, newVal) replaces only if key (or key value pair) exists, returns previous value
-- .remove(key) or .remove(key, value) for specific key-val combinations (returns boolean) 
+- .remove(key) or .remove(key, value) for specific key-val combinations (returns boolean)
+- getOrDefault(searchKey, defaultItem) 
 - specify key and value types in declaration:
 
       // String key, String value:
@@ -1278,6 +1279,23 @@ When allowing a class to be subclass, take care deciding if equals / hashCode sh
 
 ### Sorted Collections
 
+`Collections.unmodifiableMap(Map map)` Returns an unmodifiable **view** of the specified map; good to return immutable objects that don't allow modifications of the referenced objects; fast, as it doesn't create a copy but a view. **Objects in the collection can *still* be modified.**
+
+Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {...}`:
+
+    for(Map.Entry<StockItem, Integer> item: list.entrySet()) {
+      // item is of type Map.Entry<StockItem, Integer> and provides
+      // methods like getKey() and getValue()
+      totalCost += item.getKey().getPrice() * item.getValue();
+      s += item.getKey() + ", " + item.getValue();
+    }
+
+`LinkedHashMap` works like hashmap but keeps insertion order. `unmodiefiableMap` keeps that order as it's just a view of the underlying Map, whatever specific subtype.
+
+`TreeMap`
+> The map is sorted according to the natural ordering of its keys, or by a Comparator provided at map creation time, depending on which constructor is used.
+
+- Treemap calls CompareTo when inserting items, resulting in the desired ordering but also doing more work when inserting items.
 
 ### Sidenotes
 
@@ -1295,11 +1313,7 @@ When allowing a class to be subclass, take care deciding if equals / hashCode sh
         }
       }
 
-## Section 13 - Javafx
-
-### Should I learn it?
-
-- maybe rather skip this and do a spring course instead
+## Section 13 - Javafx (incl. many other Java concepts)
 
 ### Installation
 
@@ -1307,3 +1321,108 @@ When allowing a class to be subclass, take care deciding if equals / hashCode sh
 - Download sdk for OS at https://gluonhq.com/products/javafx/
 - ctrl-shift-alt-s -> global libraries -> navigate to lib, select all .jar files, add
 
+### Creating a hello world project (>java8)
+
+- create javafx project
+- file -> project structure -> global libraries -> right click javafx and add
+- right click src folder, new, module-info.java -> add code (package name here is "sample")
+
+      module HelloWorldFX{
+        requires javafx.fxml;
+        requires javafx.controls;
+        opens sample;
+      }
+
+### Overview
+
+- designed with MVC pattern in mind (separation of data and UI code)
+
+- model:
+- view: fxml (basically a ui description in a xml);
+
+- Applications Main must extend `javafx.application.Application` (already configured when creating a javafx project)
+
+- Stage: top level UI container
+- Scene: backed by scene graph; can be build by hand or read in from fxml:
+
+sample.fxml:
+
+    (...)
+    <GridPane fx:controller="sample.Controller"
+    xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+    </GridPane>
+
+Main.java:
+
+public class Main extends Application {
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.show();
+    }
+
+The same in code:
+
+
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+      GridPane root = new GridPane();
+      root.setAlignment(Pos.CENTER);
+      root.setVgap(10);
+      root.setHgap(10);
+      primaryStage.setTitle("Hello Javafx!");
+      primaryStage.setScene(new Scene(root, 300, 275));
+      primaryStage.show();
+    }
+
+
+- to change ui, load new graph (fxml) into scene and load it into new stage
+
+### Layouts
+
+#### GridPane
+
+- define spacing and alignment in GridPane wrapper: `alignment="center" hgap="10" vgap="10"`
+- Position with GridPane.rowIndex and .columnIndex:
+
+![GridPane positioning](images/gridpane.png)
+
+- use gridLinesVisible="true" as wrapper property to debug positoning:
+
+![gridlines](images/gridlines.png)
+
+
+- Prefered size: determine how much space control gets (default: as much as it needs to display the content)
+- defince column widths with columnConstraint:
+
+      <columnConstraints>
+          <ColumnConstraints percentWidth="70.0"/>
+          <ColumnConstraints percentWidth="30.0"/>
+      </columnConstraints>
+- define pane conten with alignment, e.g. `alignment="top_center"`
+- padding: 
+
+      <padding>
+          <Insets top="30"/>
+      </padding>
+
+- Span multiple columns with `<Button text="Hey!"  GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2"/>`
+- set h/v alignment with `GridPane.halignment="RIGHT"`
+
+#### HBox
+
+- usually used for dialogs / as child
+- lays elements out vertically by default
+- Limited css with -fx- prefix available (also in all other layout types?):
+
+`<HBox xmlns:fx="http://javafx.com/fxml" fx:controller="sample.Controller" alignment="top_center"
+style="-fx-border-color: red; -fx-border-width: 3; -fx-border-style: dashed;">`
+
+- spacing: `spacing="10"`
+- change spacing of elements (inside the element tag): ` prefWidth="90"`
+
+#### BorderPane
+
+- most commonly used for top level windows
+- places controls in one of 5 positions: top, bottom, left, right, center
