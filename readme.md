@@ -1332,18 +1332,18 @@ Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {..
         requires javafx.controls;
         opens sample;
       }
+- when refactoring the project name and an compile error occurs, change configuration in the pulldown in the upper right corner in intellij
 
 ### Overview
 
+- JavaFX uses a theater metaphor (stage, scene).
+  - Stage: top level UI container
+  - Scene: backed by scene graph; can be build by hand or read in from fxml:
 - designed with MVC pattern in mind (separation of data and UI code)
-
-- model:
-- view: fxml (basically a ui description in a xml);
+  - model:
+  - view: fxml (basically a ui description in a xml);
 
 - Applications Main must extend `javafx.application.Application` (already configured when creating a javafx project)
-
-- Stage: top level UI container
-- Scene: backed by scene graph; can be build by hand or read in from fxml:
 
 sample.fxml:
 
@@ -1381,6 +1381,10 @@ The same in code:
 
 ### Layouts
 
+Overview:
+
+[builtin layouts from oracle documentation](https://docs.oracle.com/javafx/2/layout/builtin_layouts.htm)
+
 #### GridPane
 
 - define spacing and alignment in GridPane wrapper: `alignment="center" hgap="10" vgap="10"`
@@ -1410,10 +1414,10 @@ The same in code:
 - Span multiple columns with `<Button text="Hey!"  GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2"/>`
 - set h/v alignment with `GridPane.halignment="RIGHT"`
 
-#### HBox
+#### HBox/VBox
 
 - usually used for dialogs / as child
-- lays elements out vertically by default
+- lays elements out vertically (VBox: vertically) by default
 - Limited css with -fx- prefix available (also in all other layout types?):
 
 `<HBox xmlns:fx="http://javafx.com/fxml" fx:controller="sample.Controller" alignment="top_center"
@@ -1426,3 +1430,454 @@ style="-fx-border-color: red; -fx-border-width: 3; -fx-border-style: dashed;">`
 
 - most commonly used for top level windows
 - places controls in one of 5 positions: top, bottom, left, right, center
+- center will take whatever space is left over and fill entire space (as a rectangular block)
+
+Simple example:
+
+    <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="sample.Controller">
+        <center>
+            <Label>
+            Main application (center)
+            </Label>
+        </center>
+        <bottom>
+            <HBox spacing="10" alignment="bottom_right">
+                <padding>
+                    <Insets bottom="10" right="10" />
+                </padding>- Stage: top level UI container
+                <Button text="OK" prefWidth="90"/>
+                <Button text="Cancel" prefWidth="90"/>
+                <Button text="Help" prefWidth="90"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
+
+![border pane example](images/borderpane.png)
+
+#### AnchorPane
+
+- popular top level layout
+- Anchors children to edges
+
+#### FlowPane / TilePane
+
+- very much like css flex, automatically wraps children (horizontally or vertically, depending on the FlowPane direction) if FlowPane doesn't have enough space in the given dimension; reacts to resizing.
+- useful if amount of elements isn't clear on compiletime (e.g. reading elements from a database)
+
+      <?import javafx.scene.layout.FlowPane?>
+      <?import javafx.scene.control.Button?>
+      <FlowPane fx:controller="sample.Controller" xmlns:fx="http://javafx.com/fxml" orientation="HORIZONTAL">
+          <Button text="Button 1" />
+          <Button text="Button 2" />
+          <Button text="Button 3" />- Stage: top level UI container
+- Scene: backed by scene graph; can be build by hand or read in from fxml:
+
+          <Button text="Button 4" />
+          <Button text="Button 5" />
+          <Button text="Button 6" />
+          <Button text="Button 7" />
+          <Button text="Button 8" />
+          <Button text="Button 9" />018e.eventhandlers
+          <Button text="Button 10" />
+      </FlowPane>
+
+![Flowpane example](images/flowpane.png)
+
+- TilePane is like FlowPane but puts elements in a grid
+
+#### StackPane
+
+- stacks children on top (z) of each other in order added
+- useful for adding a background image for example
+
+### Controls (control nodes)
+
+[Example Button (and other) documentation](https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Button.html)
+
+- all controls implement Skinnable, so extending or creating new controls is possible
+- inherit form Labeled
+
+- Old and ugly javafx graphics library: https://repo1.maven.org/maven2/net/java/linoleum/jlfgr/1_0/ (add with module settings)
+  - rename FIRST to jlfgr.jar to avoid idea error message
+  - add "requires jlfgr;" to module-info.java 
+  - better yet, never use it except for this course
+  - add image to e.g. button like this (image will be highlighted as not found but will still work / compile): 
+  - tooltips must be added as "inner tags"
+    
+        <Button onAction="#showNewItemDialog">
+            <tooltip>
+                <Tooltip text="Add a new ToDo Item"/>
+            </tooltip>
+            <graphic>
+                <ImageView>
+                    <Image url="@/toolbarButtonGraphics/general/New24.gif"/>
+                </ImageView>
+            </graphic>
+        </Button>
+
+#### Radiobuttons
+
+- Single select radio button groups need to have a ToggleGroup defined (note the $ in the RadioButton tags): 
+- ToggleGroup doesn not inherit from node and needs to be added directly to the scene graph
+- use `selected="true"` to select one by default 
+
+    <fx:define>
+      <ToggleGroup fx:id="colorToggleGroup" />
+    </fx:define>
+    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="2" text="Red" />
+    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="3" text="Blue"  selected="true"/>
+    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="4" text="Green" />
+  
+#### Checkbox
+
+- supports a third indeterminate state (the infamous java three state checkbox, best forget it immediately)
+- don't support togglegroups 
+- Group (visually) with e.g. VBox
+
+      <VBox GridPane.columnIndex="0" GridPane.rowIndex="2">
+          <CheckBox GridPane.rowIndex="1" GridPane.columnIndex="0" text="Dog"/>
+          <CheckBox GridPane.rowIndex="1" GridPane.columnIndex="0" text="Cat"/>
+          <CheckBox GridPane.rowIndex="1" GridPane.columnIndex="0" text="Bird"/>
+      </VBox>
+
+#### ToggleButton
+
+- like a button but with states (toggled / untoggled); can be put in a ToggleGroup like radio buttons
+
+#### TextField / PasswordField / Combox / ChoiceBox
+
+- TextField / PasswordField: nothing much to say; use wrapText="true" for wrapping in TextArea
+- ComboBox (also take note of GridPane.columnSpan and setting the default value):
+
+      <ComboBox GridPane.rowIndex="1" GridPane.columnIndex="2"  GridPane.columnSpan="3">
+        <items>
+            <FXCollections fx:factory="observableArrayList">
+                <String fx:value="Option 1 is a really long (and default) option"/>
+                <String fx:value="Option2"/>
+                <String fx:value="Option3"/>
+                <String fx:value="Option4"/>
+            </FXCollections>
+        </items>
+        <value>
+            <String fx:value="Option 1 is a really long (and default) option"/>
+        </value>
+      </ComboBox>
+  
+  - ComboBox can be made editable. Note and forget.
+- ChoiceBox: same as ComboBox, just adds a checkmark in front of the selected item; can be used with cellfactory;
+  - stick to ComboBox and forget ChoiceBox
+  
+#### Slider, Spinner, ColorPicker, DatePicker, TitledPane, Accordion
+
+- See 018d_controls > sample.fxml for examples
+
+Slider and Spinner examples (just in same screenshot to save space):
+![Slider and spinner](images/slider_spinner.png)
+
+- Spinner can be made editable (and crash the program if numeric input is too large and the arrows are used)
+- TitledPane (control, not a layout), can be used as a child of Accordion
+
+#### Event Handlers (=Event listeners)
+
+Lifecycle of UI application:
+
+- initialization
+- UI thread waits for user input and handle input event
+- teardown / cleanup on exit
+
+- Lifecycle methods in **Main.java**: start(Stage primaryStage), stop(), init()
+- Lifecycle methods in **Controller.java**: initialize()
+
+Event handlers are defined in Controller.java
+
+Basic event handler for a button:
+
+Controller.java:
+
+    public class Controller {
+      public void onButtonClicked() {
+        System.out.println("Well hello!");
+      }
+    }
+
+sample.fxml:
+
+    <Button text="Say hello" onAction="#onButtonClicked"/>
+
+To assign a handle on a control (or any other item), assing a fx:id:
+
+    <TextField fx:id="nameField" />
+
+...and assign it in Controller.java using @FXML annotation to match the variable name to the fxml control id:
+
+    @FXML
+    private TextField nameField; // var name has to be exactly the fx:id
+
+    @FXML // not really necessary, why put it here?
+    public void onButtonClicked() {
+        System.out.println("Well hello, " + nameField.getText());
+    }
+
+*DON'T initialize again as the initiliasation is done by the injections done using the @FXML annotation!*
+
+Every variable referencing a UI element must be prefixed individually:
+
+    @FXML
+    private TextField nameField;
+    @FXML
+    private Button helloButton;
+    @FXML
+    private Button byeButton;
+
+To use an event handler method for different controls, add an ActionEvent parameter as a handle to get it, similar to javascript:
+    
+fxml:
+
+    [...]
+    <Button text="Say hello" GridPane.columnIndex="1" GridPane.rowIndex="0" onAction="#onButtonClicked"/>
+    <Button text="Say hello again!" GridPane.columnIndex="1" GridPane.rowIndex="1" onAction="#onButtonClicked"/>
+
+Controller.java:
+
+    @FXML
+    private TextField nameField;
+    @FXML
+    private Button helloButton;
+    @FXML
+    private Button byeButton;
+
+    @FXML
+    public void onButtonClicked(ActionEvent e) {
+        if(e.getSource().equals(helloButton)) {
+            System.out.println("Well hello, " + nameField.getText());
+        }
+        else if(e.getSource().equals(byeButton)) {
+            System.out.println("Good bye, " + nameField.getText() + " :(");
+        }
+    }
+
+The initialize method in Controller.java (`public void initialize()`) gets called when the application starts and can be used to set prefered states of controls or other UI elements.
+
+Handler example for checking if a TextField is empty, + initialize example:
+
+    <TextField onKeyReleased="#handleKeyReleased" [...]
+
+Controller.java:
+
+    @FXML
+    public void initialize() {
+      helloButton.setDisable(true);
+    } 
+    
+    @FXML
+    public void handleKeyReleased() {
+      String text = nameField.getText();
+      boolean disableButtons = text.isEmpty() || text.trim().isEmpty();
+      helloButton.setDisable(disableButtons);
+    }
+
+#### Threads and Runnable
+
+Time consuming tasks shouldn't be done on the main UI thread as it will lock up the UI. Rather, a new background thread should be started using Runnable:
+
+    Runnable task = new Runnable() {
+      @Override
+      public void run() {
+        System.out.println("Thread started"); // ok, no fx UI change in console
+        Thread.sleep(2000); // do stuff
+        System.out.println("Thread is done");
+      }
+    };
+    new Thread(task).start(); // or just task.run()?
+
+UI changes *must* be done in the UI (application) thread to avoid colisions (Java will throw an exception if changes are attempted in a new Runnable thread). The current type of thread can be checked using `Platform.isFxApplicationThread()`:
+
+    Runnable task = new Runnable() {
+      @Override
+      public void run() {
+        try { // sleep needs try/catch
+          String s = Platform.isFxApplicationThread() ? "UI thread" : "background thread";
+          System.out.println("I'm going to sleep on the " + s); // background thread
+          Thread.sleep(2000);
+          Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+              String s = Platform.isFxApplicationThread() ? "UI thread" : "background thread";
+              System.out.println("I'm updating on the " + s); // UI Thread
+              ourLabel.setText("Thread done");
+            }
+          });
+        } catch(InterruptedException exception) {
+          // nada
+        }
+      }
+    };
+    ourLabel.setText("Starting thread");
+    new Thread(task).start(); 
+
+Another / additional way to handle thread safety is using the javafx concurrency package: [javafx threads](https://docs.oracle.com/javafx/2/threads/jfxpub-threads.htm)
+
+#### TodoList application notes
+
+- Add Items to `<ListView>` and set to single choice (Controller.java):
+      
+      public class Controller {
+        private List<TodoItem> todoItems;
+        @FXML
+        private ListView<TodoItem> todoListView;
+      
+        public void initialize() {
+          todoItems = new ArrayList<>();
+          todoItems.add(item1);
+          todoItems.add(item2);
+          [...]
+          // DON'T re-initialize the ListView (e.g. todoListView = new ListView<>()
+          todoListView.getItems().setAll(todoItems);
+          todoListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        }  
+      }
+
+- Get selected item:
+
+      TodoItem selected = todoListView.getSelectionModel().getSelectedItem();
+
+- To add an "onChange" eventhandler (regardless of how the change happened, e.g. mouseclick or programatically), add the event handler in code:
+
+      todoListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TodoItem>() {
+        @Override
+        public void changed(ObservableValue<? extends TodoItem> observable, TodoItem oldValue, TodoItem newValue) {
+          if(newValue != null) {
+            TodoItem selected = todoListView.getSelectionModel().getSelectedItem();
+            itemDetailsTextArea.setText(selected.getDetails());
+            deadlineLabel.setText(selected.getDeadline().toString());
+          }
+        }
+      });
+
+- format datetime (getDeadline returns `LocalDate`):
+
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("MMMM d, yyyy");
+    deadlineLabel.setText(df.format(selected.getDeadline()));
+  
+- Singleton: Class where only one instance is created over the entire lifecycle of the application
+  - contains a static method that returns a (=the) instance of itself
+  
+Singleton example:
+
+    public class TodoData {
+      private static TodoData instance = new TodoData();
+      private static String filename = "TodoListItems.txt";
+      private List<TodoItem> todoItems;
+      private DateTimeFormatter formatter;
+    
+      // private constructor to prohibit outside instantiation
+      private TodoData() {
+          formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+      }
+
+      public static TodoData getInstance() {
+          return instance;
+      }
+    
+      //[...] getters, setters etc
+    }
+
+- Dialogs (like confirmation windows, add new item, etc) must be added in their own fxml file and have their own controller (e.g. todoItemDialog.fxml + TodoItemDialog.java, same name just for coding style).
+  - Add with new -> fxml file
+- Main dialog pane: `DialogPane`
+
+#### Data binding
+
+- binding a control to data instead of manually synching, avoiding desynching of the controls and the data, using an Observable collection
+- e.g.: `todoListView.setItems(TodoData.getInstance().getTodoItems());` binds the content of the list permanently to the todoListView  
+
+- FXCollections types reduce the number of notifications for performance reasons:
+[https://docs.oracle.com/javase/8/javafx/api/javafx/collections/FXCollections.html](https://docs.oracle.com/javase/8/javafx/api/javafx/collections/FXCollections.html)
+
+#### Cell Factories
+
+
+
+- visual style of cells, e.g. from a ListView, can be altered using cell factories
+>The implementation of the cell factory is then responsible not just for creating a Cell instance, but also configuring that Cell such that it reacts to changes in its state.
+[https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html](https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html)
+
+#### Context Menu
+- see Controller.java + comments
+
+#### KeyEvents and Toolbars
+
+Key events
+
+- current focus determines which event is raised on keypress
+- are defined in the fxml of the window and element where the focus will occur (in the ToDo application in the ListView, which is mainwindow.fxml), e.g. `<ListView fx:id="todoListView" onKeyPressed="#handleKeyPressed">`
+
+Toolbars
+
+- just look at the mainwindow.fmxl in 018f_TodoList
+
+#### Sorting
+
+An easy way to implement sorting in a list is to wrap the ObservableList in a SortedList; it is enough to do this in the Controller.java, so no changes in the TodoData class is necessary:
+
+In Controller.java
+
+    SortedList<TodoItem> sortedList = new SortedList<TodoItem>(TodoData.getInstance().getTodoItems(), new Comparator<TodoItem>() {
+      @Override
+      public int compare(TodoItem o1, TodoItem o2) {
+        return o1.getDeadline().compareTo(o2.getDeadline());
+      }
+    });
+
+    // used before wrapping it in a sorted list:
+    // todoListView.setItems(TodoData.getInstance().getTodoItems());
+
+    todoListView.setItems(sortedList);
+
+#### Filtering
+
+To make the sorted / sortable list also filterable, add a FilteredList to the wrapping chain:
+
+    // wrap todoItems in a FilteredList to use later for "show today only" togglebuton
+    filteredList = new FilteredList<TodoItem>(TodoData.getInstance().getTodoItems(), new Predicate<TodoItem>() {
+      @Override
+      public boolean test(TodoItem todoItem) {
+        return true; // show everything by default
+      }
+    });
+
+    // wrap FilteredList in SortedList
+    SortedList<TodoItem> sortedList = new SortedList<TodoItem>(filteredList, new Comparator<TodoItem>() {
+    [...]
+
+To avoid having to rewrite the predicates if they are used more than once, best initialize them before and then just use the variable name:
+
+    // init as class members to be usable everywhere, assign in initialize(): 
+    wantAllItems = new Predicate<TodoItem>() {
+      @Override
+        public boolean test(TodoItem todoItem) {
+        return true;
+      }
+    };
+
+    wantTodaysItems = new Predicate<TodoItem>() {
+    [...]
+
+Then, by setting the fitting predicate, the list can be sorted as desired in the controller:
+
+    @FXML
+    public void handleFilterButton() {
+      if(filterToggleButton.isSelected()) {
+        filteredList.setPredicate(wantTodaysItems);
+      } else {
+        filteredList.setPredicate(wantAllItems);
+      }
+    }
+
+#### CSS with JavaFX
+
+
+Unordered notes:
+
+- kill application with Platform.exit(); (for example with a quit button)
+- adding a headerText by `dialog.setHeaderText("Create a new todo item");` looks different (more separated) than doing it in the fxml vie `<headerText>Blah</headerText>`

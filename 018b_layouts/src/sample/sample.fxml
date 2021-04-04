@@ -5,14 +5,32 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.HBox?>
-<HBox xmlns:fx="http://javafx.com/fxml" fx:controller="sample.Controller" alignment="bottom_right"
-style="-fx-border-color: red; -fx-border-width: 3; -fx-border-style: dashed;"
-spacing="10">
-    <padding>
-        <Insets bottom="10" right="10" />
-    </padding>
-    <Button text="OK" prefWidth="90"/>
-    <Button text="Cancel"  prefWidth="90"/>
-    <Button text="Help"  prefWidth="90"/>
-
-</HBox>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="sample.Controller">
+    <top>
+        <Label BorderPane.alignment="center" style="-fx-border-color:black;">I am the top element</Label>
+    </top>
+    <left>
+        <Label alignment="center">
+            This label is on the left side
+        </Label>
+    </left>
+    <right>
+        <Label alignment="center">
+            This label is on the right side
+        </Label>
+    </right>
+    <center>
+        <Label text="Main application (center), with a long text yay" />
+    </center>
+    <bottom>
+        <HBox spacing="10" alignment="bottom_right">
+            <padding>
+                <Insets bottom="10" right="10"/>
+            </padding>
+            <Button fx:id="closeButton" onAction="#handleCloseButtonAction" text="OK" prefWidth="90"/>
+            <Button text="Cancel" prefWidth="90"/>
+            <Button text="Help" prefWidth="90"/>
+        </HBox>
+    </bottom>
+</BorderPane>
