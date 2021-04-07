@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contacts>
+<contact>
+	<first_name>Peer</first_name>
+	<last_name>Teer</last_name>
+	<phone_number>01010101</phone_number>
+	<notes>super mate</notes>
+</contact>
+<contact>
+	<first_name>ggg</first_name>
+	<last_name>fsdfsad</last_name>
+	<phone_number>fsdfsa</phone_number>
+	<notes>fsdfsda</notes>
+</contact>
+</contacts>

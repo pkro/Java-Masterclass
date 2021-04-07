@@ -1,0 +1,26 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.web.WebView?>
+<GridPane fx:id="gridPane"
+          fx:controller="sample.Controller"
+          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10" stylesheets="@styles.css">
+    <Button styleClass="test" text="Button One" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <Button id="anotherButton" text="Button Two" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    <Button text="Open file..." onAction="#openFile" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+    <Button text="Open directory" onAction="#openDirectory" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+    <Button text="Save File" onAction="#saveFile" GridPane.rowIndex="0" GridPane.columnIndex="4"/>
+    <RadioButton text="Choice 1" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <RadioButton text="Choice 2" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <Label onMouseEntered="#zoomOnHover" onMouseExited="#zoomOnHover" text="JafaFX Effects" GridPane.rowIndex="3"
+           GridPane.columnIndex="0"/>
+    <Hyperlink onAction="#handleLinkClicked" text="www.javafx.com" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+    <Button text="Show page here" onAction="#showPageInWebView" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+
+    <WebView fx:id="webView" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="5" GridPane.rowSpan="5"/>
+</GridPane>

@@ -1796,8 +1796,6 @@ Singleton example:
 
 #### Cell Factories
 
-
-
 - visual style of cells, e.g. from a ListView, can be altered using cell factories
 >The implementation of the cell factory is then responsible not just for creating a Cell instance, but also configuring that Cell such that it reacts to changes in its state.
 [https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html](https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html)
@@ -1875,9 +1873,213 @@ Then, by setting the fitting predicate, the list can be sorted as desired in the
     }
 
 #### CSS with JavaFX
+- JavaFX uses a default stylesheet for a theme in the background
+  - default theme: modena
+  - also included: caspian (more rounded / shadowed controls)
+  - default stylesheet can be overridden in start() method in Main.java:
+
+`setUserAgentStylesheet(STYLESHEET_CASPIAN);`
+
+or, to add an own stylesheet:
+
+`StyleManager.getInstance().addUserAgentStylesheet(getClass().getResource("/style.css").toString());`
+
+- Styles have sometimes, but not always the same values or property names as in normal css, see example stylesheet below
+- css styles (with -fx- prefix) can be set inline or per stylesheet:
+
+Inline: `<Button text="Button One" style="-fx-background-color: green; -fx-text-fill: white;"/>`
+
+Stylesheet (e.g. styles.css):
+
+    Button {
+      -fx-background-color: green;
+      -fx-text-fill: white;
+    }
+      Button:hover {
+      -fx-cursor: hand;
+    }
+    .test {
+      -fx-background-color: blue;
+    }
+    #anotherButton {
+      -fx-background-color: red;
+    }
+
+Associate the stylesheet with application in the fxml file as a property of a pane:
+
+`<GridPane [...] stylesheets="@styles.css">`
+
+Assign classnames and IDs in the fxml using `styleClass` and / or `id` (**NOT** fx-id): 
+
+    <Button styleClass="test" [...] />    
+    <Button id="anotherButton" [...] />
+
+Positioning (float, width, position etc.) properties are **NOT** supported, while padding / margin are where it makes sense for the scene graph
+
+[Link to JavaFX CSS documentation](https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html)
+
+
+#### Transforming nodes and choosers
+
+Effects like resizing, rotation etc. can be added programmatically.
+
+Resize element and add DropShadow on hover example:
+
+Controller.java:
+
+    @FXML
+    public void zoomOnHover(Event event) {
+        double scale = 1.0;
+        DropShadow dropShadow = null;
+        if(event.getEventType().getName().equals("MOUSE_ENTERED")) {
+            scale = 1.2;
+            dropShadow = new DropShadow(0.5, Color.BLUE);
+        }
+        Control control = (Control) event.getSource();
+        control.setEffect(dropShadow);
+        control.setScaleX(scale);
+        control.setScaleY(scale);
+    }
+
+fxml:
+
+`<Label onMouseEntered="#zoomOnHover" onMouseExited="#zoomOnHover" text="JafaFX Effects" />`
+
+[List of possible effects for setEffect](https://docs.oracle.com/javase/8/javafx/api/javafx/scene/effect/package-frame.html)
+
+#### FileChooser
+
+Event handlers that creates a modal file chooser (and one for choosing directories):
+  
+    @FXML
+    GridPane gridPane; // add fx:id="gridPane" for getting the main window for the chooser
+
+    @FXML
+    public void openFile() {
+        FileChooser chooser = new FileChooser();
+        // Optionally set allowed extensions, in case of saveFile appends extension automatically
+        chooser.getExtensionFilters().addAll(
+          new FileChooser.ExtensionFilter("Text", "*.txt"),
+          new FileChooser.ExtensionFilter("PDF", "*.pdf"),
+          new FileChooser.ExtensionFilter("Image", "*.jpg", "*.png", "*.gif"),
+          new FileChooser.ExtensionFilter("All files", "*.*") // (optional) catch all
+        );
+
+        File file = chooser.showOpenDialog(gridPane.getScene().getWindow());
+        if(file != null) { // user canceled out of file chooser
+            System.out.println(file.getPath());
+        }
+    }
+
+    @FXML
+    public void openDirectory() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        File directory = chooser.showDialog(gridPane.getScene().getWindow());
+        if(directory != null) { 
+            System.out.println(directory);
+        }
+    }
+
+For saving a file, use 
+
+    // ...
+    File file = chooser.showSaveDialog(gridPane.getScene().getWindow());
+    // ...
+
+For allowing to open multiple files:
+
+    List<File> file = chooser.showOpenMultipleDialog(gridPane.getScene().getWindow());
+
+
+#### Opening web sites
+
+**This code isn't working on linux, so a workaround is used using apache commons**
+
+##### Installing apache commons
+
+- [Download commons archive](https://plugins.jetbrains.com/plugin/13251-apache-commons-library) and unzip to the java lib directory of choice
+- in intellij, go to project's module settings and add the jar file
+- add `requires java.desktop;` and `requires commons.lang3;` to `module-info.java`
+- For opening URLs use the following [utility method from stackoverflow](https://stackoverflow.com/questions/27879854/desktop-getdesktop-browse-hangs)
+
+
+    @FXML
+    public void handleLinkClicked() {
+      browseURL("http://www.javafx.com");
+    }
+
+    public void browseURL(String urlString) {
+        try {
+            if (SystemUtils.IS_OS_LINUX) {
+                // Workaround for Linux because "Desktop.getDesktop().browse()" doesn't work on some Linux implementations
+                if (Runtime.getRuntime().exec(new String[] { "which", "xdg-open" }).getInputStream().read() != -1) {
+                    Runtime.getRuntime().exec(new String[] { "xdg-open", urlString });
+                } else {
+                    System.out.println("x-dgopen not supported!");
+                }
+            } else {
+                if (Desktop.isDesktopSupported())
+                {
+                    Desktop.getDesktop().browse(new URI(urlString));
+                } else {
+                    System.out.println("Desktop command not supported!");
+                }
+            }
+
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+- For the web view part of the course, use `requires javafx.web;` in `module-info.java`
+
+Showing a page in a webview code:
+
+
+    // In FXML
+    <WebView fx:id="webView" [...] />
+  
+    // In controller
+    @FXML
+    WebView webView;
+
+    @FXML
+    public void showPageInWebView() {
+      WebEngine engine = webView.getEngine();
+      engine.load("http://www.javafx.com");
+    }
+
+#### SceneBuilder
+
+- Basically a JavaFX UI builder, download and install [from here](https://gluonhq.com/products/scene-builder/)
+- Can be used inside intellij: open fxml file an the bottom there's a SceneBuilder tab
+- sometimes when scenebuilder can't be loaded, restart intellij...
+- to wrap items in a container, select them on the left side, context menu -> wrap in
+  - if this screws up the layout, select the wrapping container and on the right side, under "layout", set row/column index and/or other settings accordingly
+  - to unwrap, right click container and select "unwrap"  
+- Standalone scenebuilder seems more stable than intellij integrated one and has more options (see menu at the top); also works better with external css (immediate updates on saving the .css); searchable properties etc.
+
+#### ContactApp challenge
+
+- see comments and links in 018i_JavaFX_Challenge
+
+Temp links:
+
+https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx
+
+- For making updates in an ObservableList visible in the *view (e.g. TableView), these must be returned using [varname]Property(), e.g. 
+
+      public SimpleStringProperty lastNameProperty() {
+        return lastName;
+      }
+
+- this has to be done even though String getFirstName etc. is used on initial load and everything seems to work except updates on an object!
+- this is actually done automatically by intellij when adding getters and setters
+
 
 
 Unordered notes:
 
 - kill application with Platform.exit(); (for example with a quit button)
 - adding a headerText by `dialog.setHeaderText("Create a new todo item");` looks different (more separated) than doing it in the fxml vie `<headerText>Blah</headerText>`
+- [creating an executable from a project](https://intellij-support.jetbrains.com/hc/en-us/community/posts/360008885240-How-to-create-an-executable-exe-file-using-Intellij) 

@@ -1,0 +1,14 @@
+Button {
+    -fx-background-color: green;
+    -fx-text-fill: white;
+
+}
+Button:hover {
+    -fx-cursor: hand;
+}
+.test {
+    -fx-background-color: blue;
+}
+#anotherButton {
+    -fx-background-color: red;
+}
