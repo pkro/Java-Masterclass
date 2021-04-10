@@ -61,6 +61,7 @@
 - constants in Java are defines as **static** (can be used without creating class instance) **final** (can't change): `private static final double KG_FACTOR = 0.45359237d;`; Must be defined in *class*, not in method
 - for precise fp calculations, **BigDecimal** should be used
 - Packages: way to organize Java projects; companies use domain names reversed
+- declarations can be separated by comma: `int x, y;` or `int x=0, y=0;`
 
 ### Casting
 
@@ -552,13 +553,15 @@ In PC class:
   - shift-enter to insert and go to next line without breaking current line 
   - Strg-Alt-M to extract selected code to method
   - select, copy, select other, right click + "compare with clipboard" = easy partial diff
+  - pasting code in markdown loses formatting, use "paste as plain text" from context menu
+  
 - reminder iterator protocol: the first call to iterator.next() actually goes to the first entry, NOT to the second 
 
 ## Section 9
 
 ### Interfaces
 
-- define behavior of class without implementations, just define the methodss
+- define behavior of class without implementations, just define the methods
 - don't have / define constructors
 - commitment that the class interfaces (method return types, signatures etc) will not change
 - public is redundant for interface methods and can/should be left out
@@ -1282,7 +1285,8 @@ When allowing a class to be subclass, take care deciding if equals / hashCode sh
 `Collections.unmodifiableMap(Map map)` Returns an unmodifiable **view** of the specified map; good to return immutable objects that don't allow modifications of the referenced objects; fast, as it doesn't create a copy but a view. **Objects in the collection can *still* be modified.**
 
 Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {...}`:
-
+    
+    // or just Entry<StockItem, Integer> item: ... 
     for(Map.Entry<StockItem, Integer> item: list.entrySet()) {
       // item is of type Map.Entry<StockItem, Integer> and provides
       // methods like getKey() and getValue()
@@ -2082,4 +2086,189 @@ Unordered notes:
 
 - kill application with Platform.exit(); (for example with a quit button)
 - adding a headerText by `dialog.setHeaderText("Create a new todo item");` looks different (more separated) than doing it in the fxml vie `<headerText>Blah</headerText>`
-- [creating an executable from a project](https://intellij-support.jetbrains.com/hc/en-us/community/posts/360008885240-How-to-create-an-executable-exe-file-using-Intellij) 
+- [creating an executable from a project](https://intellij-support.jetbrains.com/hc/en-us/community/posts/360008885240-How-to-create-an-executable-exe-file-using-Intellij)
+
+## Section 14 Exceptions and IO
+
+### Exceptions
+
+When to use try / catch and when do manual checking of parameters?
+- manual checking (object == null etc.) more common
+- no fixed rules; for input validation, try/catch might be shorter and more clear what is checked, :
+
+
+    // with manual input validation ("Look Before you Leave")
+    private static int getIntLBYL() {
+      Scanner scanner = new Scanner(System.in);
+      boolean isValid = true;
+      String input = scanner.next();
+      for (int i = 0; i < input.length(); i++) {
+        if (!Character.isDigit(input.charAt(i))) {
+          isValid = false;
+        }
+      }
+  
+      if (isValid) {
+        return Integer.parseInt(input);
+      }
+      return 0;
+    }
+    
+    // with exception (Easier to Ask for Forgiveness than Permission 
+    private static int getIntEAFP() {
+      Scanner scanner = new Scanner(System.in);
+      try {
+        return scanner.nextInt();
+      } catch (InputMismatchException e) {
+        return 0;
+      }
+    }
+
+- Class hierarchy: Throwable -> Exception -> RuntimeException
+- No use to catch an exception if the code can't do anything usable with it; this means they should propagate to a point to where something can actually be done about it in the code
+  - either let the exception be unhandled and propagate
+  - or throw an exception
+- try/catch block can be nested (but probably shouldn't)
+- there are checked and unchecked exceptions [article](https://www.baeldung.com/java-checked-unchecked-exceptions)
+  - checked expeptions: outside of control of the program (e.g. input file doesn't exist); must be declared in the method declaration with `throws` or caught (*catch or specify*)
+  - unchecked exceptions: reflect error inside program logic; RuntimeException is 
+It is recommended to catch multiple exceptions for a block and not have a try/catch block for each statement:
+
+    private static int divide() {
+      int x, y;
+      try {
+        x = getInt();
+        y = getInt();
+        System.out.println("x is " + x + ", y is " + y);
+        return x / y;
+      } catch (NoSuchElementException e) {
+        throw new ArithmeticException("no suitable input");
+      } catch (ArithmeticException e) {
+        throw new ArithmeticException("attempt to divide by 0");
+      }
+    }
+
+Since Java 7, multiple exceptions can be handled in one catch block:
+
+    [...]
+    } catch(ArithmeticException | NoSuchElementException e) {
+      // do stuff
+    }
+
+Cleanup (closing files etc) can be done in finally block.
+
+Callstack: 
+- each new method is added to the callStack
+- to make sense of the stacktrace, start at the bottom
+
+### IO
+
+- IO can be performed by byte (binary) or character (text, xml, spreadsheets etc) data
+- sequential: in sequence
+- random access: allows to jump in the file
+
+Basic file writing:
+
+      public class Locations implements Map<Integer, Location> {
+        private static Map<Integer, Location> locations = new HashMap<>();
+      
+        public static void main(String[] args) {
+          FileWriter locFile = null;
+          try {
+            locFile = new FileWriter("locations.txt");
+            for (Location location : locations.values()) {
+              locFile.write(location.getLocationID() + "," + location.getDescription() + "," + location.getExits() + "\n");
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+          } finally {
+            try {
+              if(locFile != null) { // avoid null pointer exception
+                locFile.close();
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          }
+        }
+
+"Mini-challenge": locFile is declared outside try-catch as  it couldn't be closed in finally if the try block failed as blocks always introduce new scope blocks `{}`
+
+File writing with "throws" instead of catching the exception within the method:
+
+    public static void main(String[] args) throws IOException {
+      FileWriter locFile = null;
+      try {
+        locFile = new FileWriter("locations.txt");
+        for (Location location : locations.values()) {
+          locFile.write(
+              location.getLocationID()
+                  + ","
+                  + location.getDescription()
+                  +"\n");
+        }
+      } finally {
+        if (locFile != null) {
+          locFile.close();
+        }
+      }
+    }
+
+Since Java 7, an improved way is available, similar to "with" in python: [try-with-resoureces](https://docs.oracle.com/javase/7/docs/technotes/guides/language/try-with-resources.html)
+
+File is automatically closed, even when an exception is thrown, and the exception thrown by closing the file doesn't mask/hides the exception that happens from opening / writing the file.
+
+    try(FileWriter locFile = new FileWriter("locations.txt")) {
+      for (Location location : locations.values()) {
+        locFile.write(
+                location.getLocationID()
+                        + ","
+                        + location.getDescription()
+                        +"\n");
+      }
+    }
+
+Multiple ressources can be opened using a semicolon (unintuitive, but what do i know...):
+
+    try(FileWriter locFile = new FileWriter("locations.txt");
+        FileWriter exitFile = new FileWriter("exits.txt")) {
+          [...]
+    }
+
+Scanner can be setup to use a delimiter (which still must be skipped when reading the fields); this can of course also be done with line.split(DELIMITER) and converting the individual fields to their respective type.
+
+      scanner = new Scanner(new FileReader("locations.txt"));
+      scanner.useDelimiter(",");
+      while(scanner.hasNextLine()) {
+        int loc = scanner.nextInt();
+        scanner.skip(scanner.delimiter());
+        String description = scanner.nextLine();
+        // ...
+
+To read a String between the delimiters, use `scanner.next()` (there is no scanner.nextString).
+
+Scanner closes any stream it is using automatically if the scanner instance is closed:
+
+    // from Scanner.java
+    public void close() {
+        if (closed)
+            return;
+        if (source instanceof Closeable) {
+            try {
+                ((Closeable)source).close();
+            } catch (IOException ioe) {
+                lastException = ioe;
+            }
+        }
+        sourceClosed = true;
+        source = null;
+        closed = true;
+    }
+
+#### BufferedReader
+
+- reads the input stream characters and buffers (=caches) them into a character array, default buffer is 8kb
+- must be initializes with a filereader:
+
+    `scanner = new Scanner(new BufferedReader(new FileReader(DIRECTIONS_FILE)));`
+
