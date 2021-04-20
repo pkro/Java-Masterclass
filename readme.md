@@ -19,7 +19,7 @@
   - must use single quotes: `char myChar = 'D';`
   - width: 16 bit (unicode)
   - unicode assignments are valid: `char arrow = '\U+2190';`
-  - is an int internally and can be used in calculations and loops (`for(char c = 'A'; c <= 'Z'; c++)`) 
+  - is an int internally and can be used in calculations and loops (`for(char c = 'A'; c <= 'Z'; c++)`)
 - short
   - width: 16 bit
   - -32768 - 32767
@@ -71,7 +71,6 @@
       (type) value or variable;
       byte x = (byte) (6/2); // default data type is integer so 6/2 gets interpreted as an int by the compiler; as byte range is smaller than int, it needs to be explicitely cast
 
-
 ## Section 4 OperatorsExpressions, Statements, Code blocks
 
 - use camel case, even for abreviations (correct: XmlHttpRequest, incorrect: XMLHTTPRequest)
@@ -81,7 +80,7 @@
 
 - left / right associative as usual; "=" -> right associative, '+' or '-' left associative
 - type comparison: **instanceof**
-- precedence: as usual, https://introcs.cs.princeton.edu/java/11precedence/
+- precedence: as usual, <https://introcs.cs.princeton.edu/java/11precedence/>
 - ++ / -- prefix / postfix as usual
 
 ### Statements
@@ -233,7 +232,7 @@
 - if a method has a different signature (but the same name) as the one in the parent class, it's **overloaded** and **not overridden**
 - to call methods from the superclass, it's better practice to call them without super in case they are later overrridden (unless the superclass method version should explicitely be called)
 - **this** is used to call current class members; usually used in constructors and setters, sometimes in getters
-- **super** to call parent class; commonly used in method overriding 
+- **super** to call parent class; commonly used in method overriding
 - both can't be used in a static context
 - **super()**: Java puts a default call to super() in the constructor to call the argument-less constructor of the parent class if we don't add it ourselves
 - the **super()** call must be the first statement in the constructor if it's done explicitely
@@ -320,7 +319,7 @@
       Motherboard motherboard = new Motherboard("apc200","apc", 4, 2, "1.5");
       PC pc = new PC(theCase,theMonitor,motherboard);
 
-#### how to access methods of components? 
+#### how to access methods of components?
 
 - example: pressPowerButton is defined in Case, but we want to access it from the pc object.
 - solution 1: using the getters (duh!):
@@ -329,7 +328,7 @@
       pc.getMonitor().drawPixelAt(20,30,"green");
 
 - solution 2: making getters in the class that uses the components private (or removing them alltogether) and wrapping the component's methods:
-      
+
 In PC class:
 
       public void powerUp() {
@@ -408,7 +407,7 @@ In PC class:
       String days[];
       String days[] = {"Monday", "Tuesday"};
 
-- Resizing arrays: 
+- Resizing arrays:
   - By hand: create new reference of original, dereference original variable and copy content of newly created reference in the dereferenced one
   - Use array list (see next point)
 
@@ -467,12 +466,12 @@ In PC class:
 
 - works like every linked list (val, next) + tons of methods
 - is implemented in java as doubly linked list to allow for moving back and forward
-- performant for inserting items 
+- performant for inserting items
 - instantiation like ArrayList, *boxing applies
 - Storage in memory:
   - Primitives: Java calculates memory position by max amount of bytes the given *primitive* type requires and stores them directly:
     ![Linked list with primitives](images/linkedlistprimititves.png "Linked list with primitives")
-    - this makes it possible to quickly look up items by index as a formula to calculate the memory address can be used: base address + (primitive type byte size) * index 
+    - this makes it possible to quickly look up items by index as a formula to calculate the memory address can be used: base address + (primitive type byte size) * index
   - For objects (such as strings), the *address* of the object is saved in the linkedlist:
     ![Linked list with objects](images/linkedlistobjects.png "Linked list with objects")
     - same easy index calculation possible despite variable length
@@ -520,7 +519,7 @@ In PC class:
       }
 
 - iterator.getFirst() gets first entry from iterator without moving it like news()
-- java ListIterator is implemented in a way to avoid recursive loops in structures, so the iterator is acutally "in between" two list nodes and not "On" one; (one) solution is to keep track of the direction the iterator is moving and doing an additional "next()" or "previous()" to move back and forth with the iterator 
+- java ListIterator is implemented in a way to avoid recursive loops in structures, so the iterator is acutally "in between" two list nodes and not "On" one; (one) solution is to keep track of the direction the iterator is moving and doing an additional "next()" or "previous()" to move back and forth with the iterator
 - Arrays are collection based and not a valid argument for .addAll or in the List constructor; use Array.asList as a bridge:
   
       // with explicit array creation
@@ -550,12 +549,12 @@ In PC class:
 - Intellij:
   - alt-j for multi selection (ctrl-d in vscode)
   - ctrl-shift-enter completes statement, adds ; at end and goes to next line
-  - shift-enter to insert and go to next line without breaking current line 
+  - shift-enter to insert and go to next line without breaking current line
   - Strg-Alt-M to extract selected code to method
   - select, copy, select other, right click + "compare with clipboard" = easy partial diff
   - pasting code in markdown loses formatting, use "paste as plain text" from context menu
   
-- reminder iterator protocol: the first call to iterator.next() actually goes to the first entry, NOT to the second 
+- reminder iterator protocol: the first call to iterator.next() actually goes to the first entry, NOT to the second
 
 ## Section 9
 
@@ -629,7 +628,7 @@ DeskPhone.java:
 
 - example java library: LinkedList, ArrayList, Vector and other list types use List interface, so by declaring List for object and parameter types the actual list implementation can be changed easily
 - Lists should generally be declared with the generic interface List to make implementations more flexible (can use any subclass of List), even omitting type declaration:
-      
+
       // probably too narrowly defined types:
       public interface ISaveable {
         ArrayList<String> write();
@@ -655,10 +654,10 @@ DeskPhone.java:
   - "Animal" example:
     - Bird extends Animal implements IFly implements IWalk
     - Dog extends Animal implements IWalk
-    
+
 ### Inner classes
 
-#### non static nested class:
+#### non static nested class
 
       public class Gearbox {
       private ArrayList<Gear> gears;
@@ -690,11 +689,11 @@ DeskPhone.java:
   - this is normally not necessary as it contradicts making it an inner class in the first place
   - best practice would be to make inner class private to avoid external instantiation
   
-#### inner class implementing an inner interface from another class 
+#### inner class implementing an inner interface from another class
 
 - an inner interface gives a template to create a class that is only of concern in the context of the outer class
-- example Section 9 inner classes button: 
-    
+- example Section 9 inner classes button:
+
       // Button.java
       public class Button {
         private String title;
@@ -741,6 +740,7 @@ DeskPhone.java:
       });
 
 #### abstract classes
+
 - keyword abstract
 - class that defines method definitions like interfaces but implements *some* methods
 - can't be used on its own, needs to be inherited from and forces ancestor class to implement the missing methods
@@ -778,7 +778,7 @@ DeskPhone.java:
       }
 
 - Abstract classes can inherit from abstract classes:
-      
+
       // Bird.java 
       public abstract class Bird extends Animal {
           public Bird(String name) {
@@ -817,20 +817,20 @@ DeskPhone.java:
 
 #### Interface vs abstract class
 
-- Interface: 
+- Interface:
   - has-a relationship (player has a save method)
   - just declaration, no implementation **since Java 8 also `default` methods with implementations**
   - can only have public static final variables
   - all methods in interfaces are automatically public and abstract **since Java 9 also private methods (commonly used when 2 default methods in an interface share common code)**
   - can only have abstract methods
   - A class can implement multiple interfaces
-  - decouples "what" from "how" 
+  - decouples "what" from "how"
   - Use when:
     - designing the program (rather than the implementation)
     - expect unrelated classes to implement the interface (many things can be "saveable")
     - good example: Collections API, JDBC API
   
-- Abstract class: 
+- Abstract class:
   - is-a relationship (player is a GameActor)
   - can have member variables, constructors
   - can have any visibility (public, private, protected)
@@ -844,7 +844,7 @@ DeskPhone.java:
 - both:
   - can't be instantiated by themselves
   
-### Sidenotes 
+### Sidenotes
 
 - Intellij: set up emmet like abreviations under settings->editor->live templates, e.g. scn -> Scanner scanner = new Scanner(System.in);
 - Intellij: ctrl-d to duplicate selected text
@@ -866,8 +866,7 @@ DeskPhone.java:
           System.out.println((Integer) i*2); // runtime error on second item
         }
       }
-    
-      
+
 - intellij warns of using raw types
 - use <> to indicate type to catch runtime errors:
 
@@ -937,7 +936,7 @@ Problem: this compiles fine but leads to runtime errors when initialising with a
 
     Team<String> adelaide = new Team<>("Works fine...");
     adelaide.addPlayer(new String("Throws error at runtime if cast to player"));
-    
+
 Solution: restrict type of class by using **bounded type parameters** using `extends`:
 
     public class Team<T extends Player> { //... }
@@ -948,7 +947,7 @@ Now the upper bound of Team is the player class.
 - type given on initialisation can be class or interface
 - Interfaces can specify type parameters as well
 - allows multiple types (bounds) (1 class and multiple interfaces):
-    
+
       // Player = class, Coach, Manager = Interfaces
       public class Team<T extends Player & Coach & Manager>
 
@@ -978,7 +977,7 @@ Now the upper bound of Team is the player class.
 
 ### Naming conventions
 
-- **Packages**: always lower case, unique, internet domain name reversed as prefix (de.pkro.mypackage), no dashes / starting numbers (replace / prepend with _), start with _ if it clashes with java keyword ,e.g. 1-world.com -> com._1_world
+- **Packages**: always lower case, unique, internet domain name reversed as prefix (de.pkro.mypackage), no dashes / starting numbers (replace / prepend with _), start with_ if it clashes with java keyword ,e.g. 1-world.com -> com._1_world
 - **Class names**: CamelCase, UcFirst, should be nouns
 - **Interfaces**: UcFirst
   - Consider what object implementing the interface will become / be able to do:
@@ -987,9 +986,9 @@ Now the upper bound of Team is the player class.
     - Serializable
     - etc.
 - **Method names**: mixedCase, often verbs
-- **Constants (static final)**: all uppercase, _ to separate (e.g. MAX_CASE)
+- **Constants (static final)**: all uppercase, _to separate (e.g. MAX_CASE)
 - **variable names**: mixedCase, no underscores
-- **Type parameters**: Single character, capital letters e.g. 
+- **Type parameters**: Single character, capital letters e.g.
   - E - Element (used extensively by Java Collections Framework)
   - K - key
   - T - type
@@ -1015,7 +1014,7 @@ Now the upper bound of Team is the player class.
 - com.example can be used for packages that aren't distributed
 - Intellij: create folder structure automaticaly by naming class with package: `com.example.game.Player`
 
-#### creating a jar file from a package:
+#### creating a jar file from a package
 
 - File -> project structure -> artefacts -> + button -> JAR -> From module with dependencies
 - Indicate main class to make executable if desired
@@ -1024,11 +1023,11 @@ Now the upper bound of Team is the player class.
 - build -> build artefacts -> build
 - jar is created in /out/artifacts/
 
-#### Use the created package (new project or existing):
+#### Use the created package (new project or existing)
 
 - File -> projects structure -> libraries -> + button (java) -> go to folder and select .jar file
 - library is accessible in project and visible under External Libraries in project pane
- 
+
 ### Scope
 
 - pretty much like javascript (in case of let / const, NOT var)
@@ -1039,7 +1038,7 @@ Now the upper bound of Team is the player class.
   - same goes for calling enclosing class methods
 - for loop variable is in loop scope (though not technically in {} )
 - enclosing class can access private variables of inner class (with instantiation):
-      
+
       public class ScopeCheck {
         public void useInner() {
           InnerClass inner = new InnerClass();
@@ -1078,7 +1077,7 @@ Now the upper bound of Team is the player class.
 - can be set / initialized only in declaration or in constructor (but NOT both); unchangable after constructor finishes
 - basically a (possibly computed, so not at compile time) constant / immutable member variable
 - for example giving "unique id" to an instance, see 016_section_11_access_modifiers, SomeClass.java
-- for constants, use `static final` as there will be no need for a copy of a constant in an instance; they follow the same rules as other final variables in terms of declaration, meaning they can be computed as well. 
+- for constants, use `static final` as there will be no need for a copy of a constant in an instance; they follow the same rules as other final variables in terms of declaration, meaning they can be computed as well.
 - class can be final; prevents from being subclassed. Example: Math is declared final (can't be inherited from) AND the constructor is private (can't be instantiated), so it can be ONLY used statically
 - make methods final that should not be overridden
 
@@ -1105,24 +1104,21 @@ Now the upper bound of Team is the player class.
       // Static initialization block called
       // Second Static initialization block called
       // Constructor called
-      
-
 
 ### Sidenotes
 
 - Intellij: ctrl-click on method (or ctrl-b when cursor is on method) goes to definition
 
-
 ## Section 12 - Collections
 
 ### Lists
 
-- *"unified architecture for representing and manipulating collections."* - (https://docs.oracle.com/javase/tutorial/collections/)
+- *"unified architecture for representing and manipulating collections."* - (<https://docs.oracle.com/javase/tutorial/collections/>)
 - Core collection Interfaces:
 ![Core collection interfaces](images/core_collection_interfaces.png "Core collection interfaces")
 - designed for interoperability / compatibility with each other and other types (ArrayList, LinkedList); valid: `private Collection<Seat> seats = new LinkedList<>();`
 - implement comparable to be able to use efficient static search / sort / reverse etc. methods from Collections framework:
-      
+
       // Seat class must implement Comparable, seats is an ArrayList of Seats
       int foundSeat = Collections.binarySearch(seats, requestSeat, null);
 
@@ -1131,10 +1127,11 @@ Now the upper bound of Team is the player class.
 
       public static void sortList(List<? extends Theater.Seat> list)
 - most collection types can be instantiated with arrays using Arrays.asList(ar) passed to the constructor
+
 ### Exkurs: Comarable / Comparator
 
 If a class doesn't implement comparator, a comparator can be passed to the Collections.sort (revere, etc.) method:
-      
+
       // this one is defined in the parent class 
       // Theater in this case as a static (and final) method
       // because the inner class is usually private 
@@ -1162,12 +1159,12 @@ Also check what intellij does if you click on the "split into declaration and in
 
 - maps keys to values, (can) use generics, replaces dictionaries
 - keys should be immutable (intellij / java will complain if not), e.g. objects
-- not ordered 
+- not ordered
 - myMap.put(key, value) returns the previous value associated with the key
-- self explaining: .containsKey, containsValue, 
+- self explaining: .containsKey, containsValue,
 - replace(key, newVal) or replace(key, oldVal, newVal) replaces only if key (or key value pair) exists, returns previous value
 - .remove(key) or .remove(key, value) for specific key-val combinations (returns boolean)
-- getOrDefault(searchKey, defaultItem) 
+- getOrDefault(searchKey, defaultItem)
 - specify key and value types in declaration:
 
       // String key, String value:
@@ -1198,7 +1195,7 @@ Some techniques:
 - making fields `private final`; makes it clear that it shouldn't be changed and ensures no accidental modification
 - only provide setters where necessary
 - make fields that should be final after instantiation as an argument to the constructor rather than setters:
-      
+
       // instead of
       locations.put(2, new Location(2, "You are at the top of a hill"));
       locations.get(2).addExit("N", 2);
@@ -1217,7 +1214,7 @@ Some techniques:
 - Don't allow the class to be subclasses, see access modifiers
 
 See also [A Strategy for Defining Immutable Objects](https://docs.oracle.com/javase/tutorial/essential/concurrency/imstrat.html)
-      
+
 ### Set / HashSet
 
 - usual set properties (unordered, no duplicates)
@@ -1232,8 +1229,9 @@ See also [A Strategy for Defining Immutable Objects](https://docs.oracle.com/jav
         return (this == obj);
       }
 
-- 2 objects that compare equal must have the same hashcode 
+- 2 objects that compare equal must have the same hashcode
 - the hashcode is NOT used for comparison in a hashSet but to put them into buckets to facilitate search
+
 >If two objects have the same hashcode then they are NOT necessarily equal. Otherwise you will have discovered the perfect hash function.
 But the opposite is true: if the objects are equal, then they must have the same hashcode.
 
@@ -1248,9 +1246,8 @@ This does still work to remove duplicates and meets the requirement that two obj
 
 Problem: This puts all items in the same bucket in the HashMap, reducing performance benefits of hash collection class.
 
-
 When overriding equals, make sure to use the correct signature so it gets actually used, otherwise it's just overloaded:
-      
+
     // WRONG (and intellij will complain that nothing is actually overridden):
     @Override
     public boolean equals(HeavenlyBody obj) { ...
@@ -1261,11 +1258,9 @@ When overriding equals, make sure to use the correct signature so it gets actual
       // don't forget to cast obj to the object needed, e.g.
       String objName = ((HeavenlyBody) obj).getName();
 
-
 [Documentation and rules for hashCode and equals](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#hashCode--)
 
 Set operations from [Java tutorial](https://docs.oracle.com/javase/tutorial/collections/interfaces/set.html):
-
 
 - s1.containsAll(s2) — returns true if s2 **is a subset** of s1. (s2 is a subset of s1 if set s1 contains all of the elements in s2.)
 - s1.addAll(s2) — transforms s1 into the **union** of s1 and s2. (The union of two sets is the set containing all of the elements contained in either set.)
@@ -1273,8 +1268,6 @@ Set operations from [Java tutorial](https://docs.oracle.com/javase/tutorial/coll
 - s1.removeAll(s2) — transforms s1 into the (asymmetric) **set difference** of s1 and s2. (For example, the set difference of s1 minus s2 is the set containing all of the elements found in s1 but not in s2.)
 
 No symetric difference method (items that appear in one OR the other, but NOT BOTH); can be obtained by removing intersection from the union:
-
-
 
 ### Potential issues with equals() and subclassing
 
@@ -1285,7 +1278,7 @@ When allowing a class to be subclass, take care deciding if equals / hashCode sh
 `Collections.unmodifiableMap(Map map)` Returns an unmodifiable **view** of the specified map; good to return immutable objects that don't allow modifications of the referenced objects; fast, as it doesn't create a copy but a view. **Objects in the collection can *still* be modified.**
 
 Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {...}`:
-    
+
     // or just Entry<StockItem, Integer> item: ... 
     for(Map.Entry<StockItem, Integer> item: list.entrySet()) {
       // item is of type Map.Entry<StockItem, Integer> and provides
@@ -1309,7 +1302,7 @@ Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {..
 - Math.cbrt = cube root ( `x = Math.cbrt(x*x*x)`)
 - nested enums are a useful thing for constants to get errors at compile time when assigning wrong values:
 - enums have also a default toString() method that returns the enum "name"
-    
+
       public class HeavenlyBody {
         // ...
         protected enum BodyTypes {
@@ -1322,7 +1315,7 @@ Another way to iterate over a Map besides `for(ItemType item: list.keySet()) {..
 ### Installation
 
 - not bundled with Java > 8
-- Download sdk for OS at https://gluonhq.com/products/javafx/
+- Download sdk for OS at <https://gluonhq.com/products/javafx/>
 - ctrl-shift-alt-s -> global libraries -> navigate to lib, select all .jar files, add
 
 ### Creating a hello world project (>java8)
@@ -1368,7 +1361,6 @@ public class Main extends Application {
 
 The same in code:
 
-
     @Override
     public void start(Stage primaryStage) throws Exception{
       GridPane root = new GridPane();
@@ -1379,7 +1371,6 @@ The same in code:
       primaryStage.setScene(new Scene(root, 300, 275));
       primaryStage.show();
     }
-
 
 - to change ui, load new graph (fxml) into scene and load it into new stage
 
@@ -1400,7 +1391,6 @@ Overview:
 
 ![gridlines](images/gridlines.png)
 
-
 - Prefered size: determine how much space control gets (default: as much as it needs to display the content)
 - defince column widths with columnConstraint:
 
@@ -1409,7 +1399,7 @@ Overview:
           <ColumnConstraints percentWidth="30.0"/>
       </columnConstraints>
 - define pane conten with alignment, e.g. `alignment="top_center"`
-- padding: 
+- padding:
 
       <padding>
           <Insets top="30"/>
@@ -1428,7 +1418,7 @@ Overview:
 style="-fx-border-color: red; -fx-border-width: 3; -fx-border-style: dashed;">`
 
 - spacing: `spacing="10"`
-- change spacing of elements (inside the element tag): ` prefWidth="90"`
+- change spacing of elements (inside the element tag): `prefWidth="90"`
 
 #### BorderPane
 
@@ -1501,13 +1491,13 @@ Simple example:
 - all controls implement Skinnable, so extending or creating new controls is possible
 - inherit form Labeled
 
-- Old and ugly javafx graphics library: https://repo1.maven.org/maven2/net/java/linoleum/jlfgr/1_0/ (add with module settings)
+- Old and ugly javafx graphics library: <https://repo1.maven.org/maven2/net/java/linoleum/jlfgr/1_0/> (add with module settings)
   - rename FIRST to jlfgr.jar to avoid idea error message
-  - add "requires jlfgr;" to module-info.java 
+  - add "requires jlfgr;" to module-info.java
   - better yet, never use it except for this course
-  - add image to e.g. button like this (image will be highlighted as not found but will still work / compile): 
+  - add image to e.g. button like this (image will be highlighted as not found but will still work / compile):
   - tooltips must be added as "inner tags"
-    
+
         <Button onAction="#showNewItemDialog">
             <tooltip>
                 <Tooltip text="Add a new ToDo Item"/>
@@ -1521,21 +1511,21 @@ Simple example:
 
 #### Radiobuttons
 
-- Single select radio button groups need to have a ToggleGroup defined (note the $ in the RadioButton tags): 
+- Single select radio button groups need to have a ToggleGroup defined (note the $ in the RadioButton tags):
 - ToggleGroup doesn not inherit from node and needs to be added directly to the scene graph
-- use `selected="true"` to select one by default 
+- use `selected="true"` to select one by default
 
-    <fx:define>
-      <ToggleGroup fx:id="colorToggleGroup" />
-    </fx:define>
-    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="2" text="Red" />
-    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="3" text="Blue"  selected="true"/>
-    <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="4" text="Green" />
+      <fx:define>
+        <ToggleGroup fx:id="colorToggleGroup" />
+      </fx:define>
+      <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="2" text="Red" />
+      <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="3" text="Blue"  selected="true"/>
+      <RadioButton toggleGroup="$colorToggleGroup" GridPane.rowIndex="0" GridPane.columnIndex="4" text="Green" />
   
 #### Checkbox
 
 - supports a third indeterminate state (the infamous java three state checkbox, best forget it immediately)
-- don't support togglegroups 
+- don't support togglegroups
 - Group (visually) with e.g. VBox
 
       <VBox GridPane.columnIndex="0" GridPane.rowIndex="2">
@@ -1634,7 +1624,7 @@ Every variable referencing a UI element must be prefixed individually:
     private Button byeButton;
 
 To use an event handler method for different controls, add an ActionEvent parameter as a handle to get it, similar to javascript:
-    
+
 fxml:
 
     [...]
@@ -1724,7 +1714,7 @@ Another / additional way to handle thread safety is using the javafx concurrency
 #### TodoList application notes
 
 - Add Items to `<ListView>` and set to single choice (Controller.java):
-      
+
       public class Controller {
         private List<TodoItem> todoItems;
         @FXML
@@ -1801,10 +1791,12 @@ Singleton example:
 #### Cell Factories
 
 - visual style of cells, e.g. from a ListView, can be altered using cell factories
+
 >The implementation of the cell factory is then responsible not just for creating a Cell instance, but also configuring that Cell such that it reacts to changes in its state.
 [https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html](https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Cell.html)
 
 #### Context Menu
+
 - see Controller.java + comments
 
 #### KeyEvents and Toolbars
@@ -1877,6 +1869,7 @@ Then, by setting the fitting predicate, the list can be sorted as desired in the
     }
 
 #### CSS with JavaFX
+
 - JavaFX uses a default stylesheet for a theme in the background
   - default theme: modena
   - also included: caspian (more rounded / shadowed controls)
@@ -1913,7 +1906,7 @@ Associate the stylesheet with application in the fxml file as a property of a pa
 
 `<GridPane [...] stylesheets="@styles.css">`
 
-Assign classnames and IDs in the fxml using `styleClass` and / or `id` (**NOT** fx-id): 
+Assign classnames and IDs in the fxml using `styleClass` and / or `id` (**NOT** fx-id):
 
     <Button styleClass="test" [...] />    
     <Button id="anotherButton" [...] />
@@ -1921,7 +1914,6 @@ Assign classnames and IDs in the fxml using `styleClass` and / or `id` (**NOT** 
 Positioning (float, width, position etc.) properties are **NOT** supported, while padding / margin are where it makes sense for the scene graph
 
 [Link to JavaFX CSS documentation](https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html)
-
 
 #### Transforming nodes and choosers
 
@@ -1984,7 +1976,7 @@ Event handlers that creates a modal file chooser (and one for choosing directori
         }
     }
 
-For saving a file, use 
+For saving a file, use
 
     // ...
     File file = chooser.showSaveDialog(gridPane.getScene().getWindow());
@@ -1994,10 +1986,9 @@ For allowing to open multiple files:
 
     List<File> file = chooser.showOpenMultipleDialog(gridPane.getScene().getWindow());
 
-
 #### Opening web sites
 
-**This code isn't working on linux, so a workaround is used using apache commons**
+- **This code isn't working on linux, so a workaround is used using apache commons**
 
 ##### Installing apache commons
 
@@ -2005,7 +1996,6 @@ For allowing to open multiple files:
 - in intellij, go to project's module settings and add the jar file
 - add `requires java.desktop;` and `requires commons.lang3;` to `module-info.java`
 - For opening URLs use the following [utility method from stackoverflow](https://stackoverflow.com/questions/27879854/desktop-getdesktop-browse-hangs)
-
 
     @FXML
     public void handleLinkClicked() {
@@ -2039,7 +2029,6 @@ For allowing to open multiple files:
 
 Showing a page in a webview code:
 
-
     // In FXML
     <WebView fx:id="webView" [...] />
   
@@ -2069,9 +2058,9 @@ Showing a page in a webview code:
 
 Temp links:
 
-https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx
+<https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx>
 
-- For making updates in an ObservableList visible in the *view (e.g. TableView), these must be returned using [varname]Property(), e.g. 
+- For making updates in an ObservableList visible in the *view (e.g. TableView), these must be returned using [varname]Property(), e.g.
 
       public SimpleStringProperty lastNameProperty() {
         return lastName;
@@ -2079,8 +2068,6 @@ https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx
 
 - this has to be done even though String getFirstName etc. is used on initial load and everything seems to work except updates on an object!
 - this is actually done automatically by intellij when adding getters and setters
-
-
 
 Unordered notes:
 
@@ -2093,9 +2080,9 @@ Unordered notes:
 ### Exceptions
 
 When to use try / catch and when do manual checking of parameters?
+
 - manual checking (object == null etc.) more common
 - no fixed rules; for input validation, try/catch might be shorter and more clear what is checked, :
-
 
     // with manual input validation ("Look Before you Leave")
     private static int getIntLBYL() {
@@ -2113,8 +2100,8 @@ When to use try / catch and when do manual checking of parameters?
       }
       return 0;
     }
-    
-    // with exception (Easier to Ask for Forgiveness than Permission 
+
+    // with exception (Easier to Ask for Forgiveness than Permission
     private static int getIntEAFP() {
       Scanner scanner = new Scanner(System.in);
       try {
@@ -2131,7 +2118,7 @@ When to use try / catch and when do manual checking of parameters?
 - try/catch block can be nested (but probably shouldn't)
 - there are checked and unchecked exceptions [article](https://www.baeldung.com/java-checked-unchecked-exceptions)
   - checked expeptions: outside of control of the program (e.g. input file doesn't exist); must be declared in the method declaration with `throws` or caught (*catch or specify*)
-  - unchecked exceptions: reflect error inside program logic; RuntimeException is 
+  - unchecked exceptions: reflect error inside program logic; RuntimeException is
 It is recommended to catch multiple exceptions for a block and not have a try/catch block for each statement:
 
     private static int divide() {
@@ -2157,7 +2144,8 @@ Since Java 7, multiple exceptions can be handled in one catch block:
 
 Cleanup (closing files etc) can be done in finally block.
 
-Callstack: 
+Callstack:
+
 - each new method is added to the callStack
 - to make sense of the stacktrace, start at the bottom
 
@@ -2272,3 +2260,486 @@ Scanner closes any stream it is using automatically if the scanner instance is c
 
     `scanner = new Scanner(new BufferedReader(new FileReader(DIRECTIONS_FILE)));`
 
+- scanner can actually be skipped if no speciffic scanner functionality is used:
+- for this to work with the locations file in the 019b_inputoutput project, we will need to specify that the line should be split into 2 chunks
+
+      try (BufferedReader directionsFile = new BufferedReader(new FileReader(DIRECTIONS_FILE))) {
+          String input;
+          while ((input = locationsFile.readLine()) != null) {
+            String[] line = input.split(DELIMITER, 2); // 2 chunks 
+           // ...
+      } catch(IOException e) {
+        e.printStackTrace();
+      }
+
+#### BufferedWriter
+
+- same as BufferedReader, writes to file in chunks
+
+#### Byte Streams
+
+- automatically writes binary data of correct length for the type, no delimiter necessary, thus avoiding issues with delimiters:
+
+      public static void main(String[] args) throws IOException {
+        try(DataOutputStream locFile = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(LOCATIONS_BIN)))) {
+          for(Location location: locations.values()) {
+            locFile.writeInt(location.getLocationID());
+            locFile.writeUTF(location.getDescription());
+            // save number of exits to read from stream later
+            locFile.writeInt(location.getExits().size()-1);
+            for(String direction: location.getExits().keySet()) {
+              if(!direction.equalsIgnoreCase("Q")) {
+                locFile.writeUTF(direction);
+                locFile.writeInt(location.getExits().get(direction));
+              }
+            }
+          }
+        }
+      }
+
+- same for reading (note the end of file for the while loop is determined by the EOFException);
+- if whe just used the IOException (which would work as well), we wouldn't notice other IO exceptions (file doesn't exist etc)
+
+      try (DataInputStream locationsStream = new DataInputStream(new BufferedInputStream(new FileInputStream(LOCATIONS_BIN)))) {
+          boolean EOF = false;
+          while (!EOF) {
+            try {
+              int loc = locationsStream.readInt();
+              String description = locationsStream.readUTF();
+      
+              Map<String, Integer> exits = new LinkedHashMap<>();
+              int numExits = locationsStream.readInt();
+              for(int i=0; i<numExits; i++) {
+                exits.put(locationsStream.readUTF(), locationsStream.readInt());
+              }
+              Location location = new Location(loc, description, exits);
+              locations.put(loc, location);
+            } catch (EOFException e) {
+              EOF = true;
+            }
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+
+#### Serialization
+
+- makes it possible to store the object in its entirety instead of storing the members values and then reassembling it when reading them back 
+- to make an object / class serializable, it has to implement the Serializable interface
+- when making a class serializable, it is strongly recommended adding a long field serialVersionUID, e.g. `private long serialVersionUID = 1L;`
+  - this is basically a version number of the class to ensure it is compatible with the current class version when reading it in
+  - otherwise the compiler gives a warning and give a default value; this can lead to problems if another compiler sets another default value
+  - is used to ensure that the read in object is compatible with the type
+- Serializable doesn't have any methods to implement
+- non-primitive types (HashMaps etc.) must also implement the serializable interface in order to be able to be automatically be serialized (most do)
+- when using own classes / types as fields, these must be made serializable
+- otherwise, this is all there is to it (add `implements Serializable` and `serialVersionUID`) 
+- instead of DataOutputStream, ObjectOutputStream is used to write serialized object
+  
+Example serialization of the adventure game code:
+    
+    // Location.java
+    public final class Location implements Serializable {
+      // ...
+      private long serialVersionUID = 1L;
+      // ...
+
+    // Locations.java main()
+    try(ObjectOutputStream locFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(LOCATIONS_BIN)))) {
+      for(Location location: locations.values()) {
+        locFile.writeObject(location);
+      }
+    }
+
+- ObjectOutputStream (and input) implements DataInputStream methods, so it is not limited to serialized data but can be used to read/write primitives and UTF as well.
+- when reading objects back from a stream using `readObject()`, they must be cast to the object type and a ClassNotFoundException must be handled:
+
+      // from Locations.java
+      static {
+        try (ObjectInputStream locationsStream =
+            new ObjectInputStream(new BufferedInputStream(new FileInputStream(LOCATIONS_BIN)))) {
+          boolean EOF = false;
+          while (!EOF) {
+            try {
+              Location location = (Location) locationsStream.readObject();
+              locations.put(location.getLocationID(), location);
+            } catch (EOFException e) {
+              EOF = true;
+            }
+          }
+        } catch (IOException | ClassNotFoundException e) {
+          e.printStackTrace();
+        }
+      }
+
+- object instances are unique in files, meaning when serializing 2 references pointing to the same object get serialized, only one instance is written to the file
+
+#### RandomAccessFile
+
+- can read random objects / elements from a file (as opposed to sequentially)
+- file pointer: pointer (offset) pointing to the byte that the next file read / write will be done and is advanced by the amount of bytes the read/write operation took
+- with objects of variable size (as opposed to primitives or objects containing only fixed length members) can't be looked up by just calculating (objNum - 1) * objSizeInBytes
+- for these, and index needs to be included, with each record indicating the objects id, offset in file and length of the record (this is no fixed requirement but typical for an index record), all in all 12 bytes per record entry
+- index should be read in memory
+
+Example structure from Locations.java (see 019e_randomaccess)
+
+    // creating a random access / indexed file
+    // first 4 bytes: number of locations (bytes 0-4)
+    // next 4 bytes: start offset of location section (bytes 4-7)
+    // index (1692 bytes, byte 8 - 1699)
+    // actual location record from byte 1700 onwards
+    public static void main(String[] args) throws IOException {
+      try (RandomAccessFile rao = new RandomAccessFile(LOCATIONS_RAND, "rwd")) {
+        rao.writeInt(locations.size());
+        int numberOfIntsInRecord =
+            3; // 3 ints: locationID, file offset of location, size of location record in bytes
+        int indexSize = locations.size() * numberOfIntsInRecord * Integer.BYTES;
+        // file pointer is now after the first integer from the first writeInt operation
+        int locationStart =
+            (int) // cast to int because filepointer is long
+                (indexSize + rao.getFilePointer() + Integer.BYTES);
+        rao.writeInt(locationStart);
+        // write locations and simultaneously build index in memory to write later
+        long indexStart = rao.getFilePointer(); // save current pointer for writing index later
+  
+        // only needed for first location, sequential writing afterwards
+        int startPointer = locationStart;
+        for (Location location : locations.values()) {
+          rao.writeInt(location.getLocationID());
+          rao.writeUTF(location.getDescription());
+          StringBuilder builder = new StringBuilder();
+          for (String direction : location.getExits().keySet()) {
+            if (!direction.equalsIgnoreCase(("Q"))) {
+              builder.append(direction);
+              builder.append(",");
+              builder.append(location.getExits().get(direction));
+              builder.append(",");
+              // = direction, locationID, direction, ..., e.g. N,1,U,2...
+            }
+          }
+          rao.writeUTF(builder.toString());
+          // IndexRecord = own simple class with 2 fields, startByte and length
+          IndexRecord record =
+              new IndexRecord(startPointer, (int) (rao.getFilePointer() - startPointer));
+          // index = Map<Integer, IndexRecord>
+          index.put(location.getLocationID(), record);
+          startPointer = (int) rao.getFilePointer();
+        }
+  
+        // write the actual index starting on the offset we saved before
+        rao.seek(indexStart);
+        for (Integer locationID : index.keySet()) {
+          rao.writeInt(locationID);
+          rao.writeInt(index.get(locationID).getStartByte());
+          rao.writeInt(index.get(locationID).getLength());
+        }
+      }
+    }
+
+Notes on random access file opening modes:
+
+>rws flushes the contents of the file and the modification date of the file.  
+>rwd flushs the contents of the file, but the modification date might not change until the file is closed.  
+>rw only flushes when you tell it to and doesn't change the modifcation date until you close the file.  
+>BTW rwd is much slower for writes than rw, and rws is slower again.
+
+*https://stackoverflow.com/questions/14232539/java-randomaccessfile-mode-rws-vs-rwd*
+
+Reading in the index example file:
+
+    // we just read the index now as the point is to load the actual location on demand
+    static {
+      try {
+        ra = new RandomAccessFile(LOCATIONS_RAND, "rwd");
+        int numLocations = ra.readInt(); // not needed but good practice to store num of records
+        long locationsStartPoint = ra.readInt();
+        while (ra.getFilePointer() < locationsStartPoint) {
+          int locationId = ra.readInt();
+          int locationStart = ra.readInt();
+          int locationLength = ra.readInt();
+          IndexRecord record = new IndexRecord(locationStart, locationLength);
+          index.put(locationId, record); // the map we also used for writing in the former Main method
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+Reading in an entry using the index map:
+
+    public Location getLocation(int locationId) throws IOException {
+      IndexRecord record = index.get(locationId);
+      ra.seek(record.getStartByte());
+      int id = ra.readInt(); // same as locationId
+      String description = ra.readUTF();
+      String exits = ra.readUTF();
+      String[] exitPart = exits.split(",");
+      Location location = new Location(id, description, null);
+      if (locationId != 0) { // the "quit" location
+        for (int i = 0; i < exitPart.length; i += 2) {
+          String direction = exitPart[i];
+          int destination = Integer.parseInt(exitPart[i + 1]);
+          location.addExit(direction, destination);
+        }
+      }
+      return location;
+    }
+
+
+- the readUTF method knows the amount of data it must read because it creates its own header indicating the string length, followed by the string itself.
+
+#### Java NIO
+
+[good java.nio documentation @ jenkov.com](http://tutorials.jenkov.com/java-nio/index.html)
+
+- introduced in Java 1.4
+- improved Java IO: 
+  - non-blocking: threads will not block the thread when waiting to read/write; criticisms include that non-blocking IO is slower than blocking IO
+- more complex than java IO
+- deals with data in blocks instead of characters and binary
+- java.nio can be used to create a java.io stream
+- two "buckets" of classes:
+  - those dealing with file system
+  - those dealing with reading and writing data to / from a datasource
+
+- File path is a replacement for file class (should be used as it's more robust wherever possible):  
+  
+      Path locPath = FileSystems.getDefault().getPath("locations_big_test.txt");
+      // or just Paths.get("locations_big.txt");
+      BufferedWriter locFile = Files.newBufferedWriter(locPath);
+      // rest follows (or can follow?) the same code as normal file access
+      // using BufferedWriter
+
+- to accomplish reading blocks, java.NIO uses channels and buffers and sometimes selectors
+- channel is the datasource being read / written to (file, socket, ...)
+- to use a datasource as a channel, a class that implements the java.NIO.Channel interface is needed
+- buffer is a typed container for the data that's being r/w
+- selectors manage single thread (?)
+- only one datasource needed for read / write as opposed to 2 in java.IO; Exception from the rule: File input stream channel is only opened for reading 
+
+Example read/write utf8
+
+      Path dataPath = Paths.get(DATA_FILE);
+      // this opens writes and closes the file
+      // so when writing a large amount of lines,
+      // a StringBuffer should be used to write them in one chung
+      Files.write(dataPath, "\nLine 4".getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+      
+      // read it back in
+      List<String> lines = Files.readAllLines(dataPath);
+      for(String line: lines) {
+          System.out.println(line);
+      }
+
+##### binary files
+
+> A buffer is essentially a block of memory into which you can write data, which you can then later read again. This memory block is wrapped in a NIO Buffer object, which provides a set of methods that makes it easier to work with the memory block.  
+>Using a Buffer to read and write data typically follows this little 4-step process:
+>- Write data into the Buffer
+>- Call buffer.flip()
+>- Read data out of the Buffer
+>- Call buffer.clear() or buffer.compact()
+
+(http://tutorials.jenkov.com/java-nio/buffers.html)
+
+
+- terminology:
+  - buffer capacity: num of elements it can contain
+  - buffer position: index of next element that should be read or written
+  - buffers mark: used by buffers reset method; default when creating a buffer is `undefined`
+
+- buffers must be flipped (reset) to the starting position explicitely when writing / reading data:
+- alternatively , the index to start on can be passed to the readInt method (absolute read): `intBuffer.getInt(0)`
+  - this also doesn't advance the buffers position
+- don't mix relative and absolute read in code
+
+
+      RandomAccessFile ra = new RandomAccessFile(DATA_FILE, "rwd");
+      FileChannel channel = ra.getChannel();
+      outputBytes[0] = 'a';
+      outputBytes[1] = 'b';
+
+      channel.read(buffer);
+      System.out.println(new String(outputBytes)); // abllo World!
+      buffer.flip(); // resets
+      
+      // channel data is read INTO buffer, think about it 
+      // as buffer = channel.read()
+      channel.read(buffer); 
+      System.out.println(new String(outputBytes)); // Hello World!
+
+- "If something goes wrong, flip()"
+- can be used chained:
+
+`buffer.put(outputBytes).putInt(245).putInt(-98765).put(outputBytes2).putInt(1000);`
+
+6 Methods in the SeekableByteChannel interface:
+
+- `read(ByteBuffer)` - reads bytes beginning at the channel's current position, and after the read,
+                               updates the position accordingly.
+                               Note that now we're talking about the channel's position, not the byte buffer's position.
+                               Of course, the bytes will be placed into the buffer starting at its current position.
+- `write(ByteBuffer)` - the same as read, except it writes. There's one exception.
+                              If a datasource is opened in APPEND mode, then the first write will take place starting
+                              at the end of the datasource, rather than at position 0. After the write, the position
+                              will be updated accordingly.
+- `position()` - returns the channel's position.
+- `position(long)` - sets the channel's position to the passed value.
+- `truncate(long)` - truncates the size of the attached datasource to the passed value.
+- `size()` - returns the size of the attached datasource
+- FileChannel class implements the SeekableByteChannel interface
+
+##### Filechannel to copy files and pipes with threads
+
+- see comments in code from 019h_JavaNio_continued for copy files
+- see comments in code from 019i_JavaNio_pipes for thread communication with pipes
+
+##### Filesystem
+
+- package: java.nio.file
+- Path interface: used to identify a file in the file system
+- Each element of a path is a node, e.g. c\stuff\readme.txt has 3 nodes, a root node (c:), a directory node (stuff) and a file node (readme.txt)
+- character to separate paths (e.g. "\" or "/" is called delimiter)
+- paths can be created for directories or files
+- can be relative
+- a file under the default path (e.g. systems user directory) can be built with getDefault:  
+  `Path dataPath = FileSystems.getDefault().getPath("data.txt");`
+- when working in intellij, the default path (working directory) is the current project directory, so the above would be the same as  
+  `Path dataPath = Paths.get("/pk/projects/IdeaProjects/Java_masterclass/019j_Paths/data.txt`
+- path is abstract, doesn't know / check if file exists or path is "real"
+
+Examples:
+
+    Path path; // java.nio.file.Path
+    path = FileSystems.getDefault().getPath("WorkingDirectory.txt");
+    path = FileSystems.getDefault().getPath("files", "subdirectory.txt");
+    //java.nio.file.Paths
+    path = Paths.get("/home/pk/projects/IdeaProjects/Java_masterclass/OutThere.txt");
+    path = Paths.get("/", "home", "pk", "projects", "IdeaProjects", "Java_masterclass", "OutThere.txt");
+    path = Paths.get("jfdlkfsd", "doesn't exist");
+    System.out.println("File path exists: " + Files.exists(path)); // true
+    System.out.println("File path exists: " + Files.notExists(path)); // false
+
+- Why another NIO Path(s) class, as java.IO.file also points to files in the filesystem?
+  - many file methods don't throw exceptions or don't provide good error messages
+  - File.rename works (I guess he means "has to be called") differently on different platforms
+  - has no support for symbolic links
+  - no way to get metadata of file (permissions, owner...)
+  - bad performance
+  
+##### Copying / Moving / Renaming / Deleting files
+
+    // Copying files
+    Files.copy(sourceFile, copyFile); // exception if file exists
+    Files.copy(sourceFile, copyFile, StandardCopyOption.REPLACE_EXISTING);
+
+    // copying directory
+    Path sourceDirectory = Paths.get("Examples", "Dir2", "Dir3");
+    Path copyDirectory = Paths.get("Examples", "Dir2", "Dir3_copy");
+    Files.copy(sourceDirectory, copyDirectory); // copies directory but not contained files
+
+    // move / rename
+    Files.move(copyDirectory, Paths.get("Examples", "Dir2", "Dir4") );
+
+    // delete
+    // when deleting directories, they have to be empty
+    Files.delete(Paths.get("Examples", "Dir2", "Dir4")); 
+    Files.deleteIfExists(Paths.get("Examples", "Dir2", "Dir4"));
+
+    // create file (this should usually be done by channel / stream and not explicitely
+    Files.createFile(Paths.get("Examples", "file2.txt"));
+    // create directory
+    Files.createDirectory(Paths.get("Examples", "new_directory"));
+
+    // creates "nested" and "directories" inside nested
+    Files.createDirectories(Paths.get("Examples", "nested", "directories"));
+    
+    // Attributes
+    long size = Files.size(filePath);
+    FileTime modified = Files.getLastModifiedTime(filePath);
+
+    // get all attributes in one object
+    BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+    System.out.println("Last accessed: " + attrs.lastAccessTime() + ", Is a symbolic link: " + attrs.isSymbolicLink());
+
+More methods for attributes etc on [Java Docs -> Java.NIO.Files](https://docs.oracle.com/javase/7/docs/api/java/nio/file/Files.html)
+
+Note: move may not work in all OS with non-empty directories
+
+##### Directory / DirectoryStreams
+
+DirectoryStream
+
+- returns an iterable stream with the direct descendants of the directory
+- accepts an optional filter (glob) as a second parameter, similar to regex;
+- "real" regex can be used as well
+- Examples:
+    - * = any string
+    - *.dat
+    - *.{dat,txt}
+    - b???.txt
+    - myFile*
+    - b?*.txt // starts with b, at least one more character ("?"), zero or more additonal characters
+
+
+    try (DirectoryStream<Path> contents = 
+            Files.newDirectoryStream(directory, 
+            "*.{dat,txt}")) {
+      for (Path path : contents) {
+        System.out.println(path.toString());
+      }
+    } catch (IOException | DirectoryIteratorException e) {
+      //...
+
+- advanced / attribute filters can be done with `DirectoryStream.Filter<Path>`, which has only one method (`accept`) to override:
+
+
+      DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+          @Override
+          public boolean accept(Path entry) throws IOException {
+            return Files.isRegularFile(entry);
+          }
+      };
+  
+      // Same as Lambda:
+      DirectoryStream.Filter<Path> lambdaFilter = p -> Files.isRegularFile(p);
+      // Or even shorter with Method Reference:
+      DirectoryStream.Filter<Path> lambdaFilterWithRef = Files::isRegularFile;
+  
+      try (DirectoryStream<Path> contents = Files.newDirectoryStream(directory, filter)) {
+      //...
+
+Creating temp files:
+
+    Path tempFile = Files.createTempFile("myapp", ".appext");
+    System.out.println(tempFile.toAbsolutePath());
+    // -> e.g. /tmp/myapp17573002425864035770.appext
+
+Walking a file tree:
+
+- have to use FileVisitor interface
+  - `preVisitDirectory()` - called before entries in directory are visited; this can be useful when copying file trees to copy / create the current top level directory of the traversal
+  - `postVisitDirectory()` - called after entries in directory (and all descendants) are visited; usefule e.g. for deleting directories, as the descendants have to be deleted first before the current top level directory can be deleted itself
+  - `visitFile()` - this is where you run the code that will operate on the file (only called for files)
+  - `visitFileFailed()` - called when a file can't be accessed
+- For examples (traversal, directory copy), see 019k_directories
+- there is not any order that can be relied on during traversal
+
+#### Mapping IO and NIO methods
+
+- see 019k_directories
+
+### File section Fazit:
+
+Use NIO when working with the filesystem
+Use IO when reading and writing files and performance is an issue
+
+## 15 Concurrency
+
+Key terms:
+
+- **process**: unit of execution that has it's own memory space
+- **process** and **application** are mostly used interchangeably. Each application has it's own memory space of *heap* which isn't shared between applications
+- **thread** unit of execution *within a process*. A process can have multiple threads. Each application / process has at least one thread, the **main thread** (in javaFX also called the **JavaFX application thread**). Almost all Java processes also have multiple system threads for memory management and IO which aren't explicitely created by the dev.
