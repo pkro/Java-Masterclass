@@ -114,6 +114,4 @@ public class Main {
       System.out.println("i="+i+" "+dir2FileContents[i].getName());
     }
   }
-
-
 }

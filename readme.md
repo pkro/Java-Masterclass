@@ -1684,7 +1684,7 @@ Time consuming tasks shouldn't be done on the main UI thread as it will lock up 
     };
     new Thread(task).start(); // or just task.run()?
 
-UI changes *must* be done in the UI (application) thread to avoid colisions (Java will throw an exception if changes are attempted in a new Runnable thread). The current type of thread can be checked using `Platform.isFxApplicationThread()`:
+UI changes *must* be done in the UI (application) thread to avoid collisions (Java will throw an exception if changes are attempted in a new Runnable thread). The current type of thread can be checked using `Platform.isFxApplicationThread()`:
 
     Runnable task = new Runnable() {
       @Override
@@ -2743,3 +2743,485 @@ Key terms:
 - **process**: unit of execution that has it's own memory space
 - **process** and **application** are mostly used interchangeably. Each application has it's own memory space of *heap* which isn't shared between applications
 - **thread** unit of execution *within a process*. A process can have multiple threads. Each application / process has at least one thread, the **main thread** (in javaFX also called the **JavaFX application thread**). Almost all Java processes also have multiple system threads for memory management and IO which aren't explicitely created by the dev.
+  - every thread shares the process's memory and files
+  - **every thread has it's own thread stack but share the heap**
+  - When to use threads?
+    - perform long running tasks in the background instead of freezing up the main thread
+    - the API requires us to provide a thread
+- **concurrency** refers to an application doing more than one thing at a time (e.g. download data and draw a shape on the screen)
+  - that doesn't mean that it necessarily does it "really" at the same time, but instead dedicates times slices to each task (e.g. download a little, draw a little etc)
+  - that means a task doesn't have to be complete before another task can start
+  
+The JVM and OS ultimately decides when threads are scheduled to run, though we can influence it by setting priority.
+
+*The order in which operations in multiple threads are executed can't be guaranteed*
+
+### 2 Ways to start a thread
+
+#### Subclassing `Thread`
+
+The task we want to run in a thread must be wrapped in a subclass of Thread, and specifically in it's `run` method. This can also be done in an anonymous class (in that case it is / must be instantiated immediately). When using the same class, it must be instantiated for each new thread.
+    
+    // AnotherThread.java
+    public class AnotherThread extends Thread {
+      @Override
+      public void run() {
+        System.out.println("Hello from another thread");
+      }
+    }
+
+    // Main.java
+    public static void main(String[] args) {
+      System.out.println("Hello from the main thread");
+      Thread anotherThread = new AnotherThread();
+      anotherThread.start();
+      System.out.println("Hello again from the main thread");
+
+      // basic example for an anonymous class' thread
+      new Thread() {
+        public void run() {
+          System.out.println("Hello from the anonymous class thread");
+        }
+      }.start();
+    }
+
+#### Implementing `Runnable` (used more often?)
+
+    // MyRunnable.java
+    public class MyRunnable implements Runnable {
+      @Override
+      public void run() {
+        System.out.println(ThreadColor.ANSI_RED + "Hello from MyRunnables implementation of run");
+      }
+    }
+
+    //Main.java
+    new Thread(new MyRunnable()).start();
+
+    // new thread using anonymous Runnable class
+    new Thread(
+            new Runnable() {
+              @Override
+              public void run() {
+                System.out.println(ThreadColor.ANSI_CYAN+"Hello from anonymous Runnable");
+              }
+            }).start();
+
+- Common mistake: using the run() method instead of start(); This results in the thread being started on the thread that inits the thread, e.g. the main thread 
+
+- Threads can be put to sleep (Thread.sleep depends on OS functions and length is not guaranteed) and can be woken up by other threads. See 020a_threads.
+  - threads can know if they're being interruped by catching the `InterruptedException` or by checking the interrupted() method regularly 
+
+- Threads can be joined to postpone operations until another thread is done; the join method can be passed a timeout value to avoid hanging if the joined thread never terminates
+      
+      //...
+      public void run() {
+        System.out.println(ThreadColor.ANSI_CYAN + "Hello from anonymous Runnable");
+        try {
+          anotherThread.join(1000); // wait max. 1 sec
+          System.out.println(ThreadColor.ANSI_CYAN + "anotherThread terminated so I'm running again");
+        } catch (InterruptedException e) {
+          System.out.println(ThreadColor.ANSI_CYAN + "I couldn't wait. I was interrupted");
+        }
+      }
+- priorities can be set with `setPriority()` (OS dependent and not always supported)
+
+#### Thread Synchronization
+
+- **every thread has it's own thread stack but share the heap**
+  - instance variables of a shared object are stored on the heap (shared), so all threads using that object use the same variable, leading to **thread interference / race conditions** when both are writing a shared ressource / variable
+  - local variables on the stack
+- Thread can be suspended anywhere (unpredictably) by th jvm, even inside a for loop (e.g. after incrementing a counter, but before checking if the condition is met)
+- Thread *can't* be interrupted during atomic operations:
+  - reading and writing reference variables
+  - reading and writing primitive variables *except* long and double as these need 2 operations internally
+  - reading and writing all variables declared `volatile`
+- Threads working with methods of the same object can be synchronized by adding `synchronized` to the methods signature:
+
+`public synchronized void doCountdown() { //...`
+
+- The object reference is stored on the stack, the object value on the heap
+- Constructors can't be synchronized (which wouldn't make sense anyway)
+- Code blocks can be synchronized as well, but only with instance (as opposed to local) variables (only objects, not primitives, as primitives don't have an internal lock state associated with them), as each thread gets it's own copy of local variables anyway.
+  - exception: local string variables can be used to synchronize because of javas internal workings (string pools) (?)
+  - this can be done with the reference of the object itself
+
+    
+    synchronized (this) {
+      for (i = 10; i > 0; i--) { // uses instance variable i
+        System.out.println(color + Thread.currentThread().getName() + ": i = " + i);
+      }
+    }
+
+or the not thread safe object that is accessed:
+
+    synchronized (buffer) {
+      buffer.add(num); // buffer is a List
+    }
+
+- drawbacks of `synchronized` blocks:
+
+  - threads that are blocked can't be interrupted until they get the lock of the object they are synchronizing on
+  - synchronized block must be in the same method
+  - can't find out about lock status and timeout if necessary
+  - no set order of threads that get the lock
+  
+- static objects and methods can be synchronized as well, in that case the Class owns the lock associated with the object's class
+- A thread can acquire an object it already owns (?)
+- always synchronize the smallest amount of code possible (don't oversynchronize), so for small functions `synchronized` in the method signature is fine, for larger ones use synchronized blocks to apply synchronization only to the relevant parts 
+
+Terminology
+
+- *Critical Section*: refers to code referencing a shared resource like a variable
+- *Thread safe*: All critical sections are synchronized, so the dev using the code doesn't have to worry about thread interference
+
+- *Some* collections such as `ArrayList` aren't thread safe / synchronized, so access to them must be either synchronized manually or use [Collections.synchronized*](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedCollection-java.util.Collection-)
+- None of the javaFX components are thread safe, that's the reason only the javafx main thread can change UI componentes
+- When synchronizing code, *only* synchronize the parts that *needs* to be synchronized to avoid unnecessary blocking of threads
+
+- Java provides methods wait, notify, notifyAll to avoid deadlocks caused by using loops to wait for input from another thread; see `020c_Messages_(Producer_consumer)` 
+
+      public synchronized String read() {
+        // loop until there is a message to read, used by consumer
+        while (empty) {
+          try {
+            // avoid deadlocks; always call in a loop that checks wakeup
+            // condition because thread may wake up for other reasons as well
+            // before the condition is satisfied
+            wait(); // avoid deadlocks
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+        empty = true;
+        // notify that method is done (BEFORE return);
+        // we don't use notyfy(threadname) because we don't know it
+        // (Thread doesn't accept any parameters we could pass such as the thread name)
+        notifyAll();
+        return message;
+      }
+
+### java.util.concurrent / Locks
+
+#### Basics
+
+- help developers to synchronize code
+- different lock types available:
+  - [java.util.concurrent.locks.ReentrantLock](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/locks/ReentrantLock.html)
+- drawback: puts the responsibility of releasing the lock on the developer
+
+**<u>The following two code examples are not the intended way of using locks</u>**
+
+- Example (bufferLock must be instantiated in main and passed to the Runnable classes passed to `new Thread`)
+
+      bufferLock.lock();
+      buffer.add(num);
+      bufferLock.unlock();
+
+- as a thread can acquire the lock that it already holds multiple times, such as in a loop that breaks before `lock.unlock()` is reached, the maximum number of locks can be exceeded, so they must be explicitely closed at the right points (also see 020d_concurrent_(producer_consumer)):
+
+      while (true) {
+        bufferLock.lock();
+        if (buffer.isEmpty()) {
+          bufferLock.unlock();
+          continue;
+        }
+        if (buffer.get(0).equals(Main.EOF)) {
+          System.out.println(color + "Exiting");
+          bufferLock.unlock();
+          break;
+        } else {
+          System.out.println(color + "Removed " + buffer.remove(0));
+        }
+        bufferLock.unlock();
+      }
+
+#### Using blocks with try/finally
+
+    bufferLock.lock(); // OUTSIDE the try/finally
+    try {
+      buffer.add(num);
+    } finally {
+      bufferLock.unlock();
+    }
+
+additionally, tryLock() can be used to check AND lock if the lock is available; optionally, a timeout can be passed to tryLock that releases the lock automatically after a given amount of time, without parameters it doesn't honor fair ordering locks:
+
+    if(bufferLock.tryLock()) { // without timeout
+      // no extra bufferLock.lock() necessary
+      try {
+        if (buffer.isEmpty()) {
+          continue;
+        }
+        if (buffer.get(0).equals(Main.EOF)) {
+          System.out.println(color + "Exiting");
+          break;
+        } else {
+          System.out.println(color + "Removed " + buffer.remove(0));
+        }
+      } finally {
+        bufferLock.unlock();
+      }
+    }
+
+[Lock Documentation](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/locks/Lock.html)
+
+### Thread Pools / ExecutorService
+
+- Thread pool: managed pool of threads
+- used through ExecutorService implementation
+- the ExecutorService must be shut down explicitely, otherwise the application keeps running
+  
+      ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+      executorService.execute(producer);
+      executorService.execute(consumer1);
+      executorService.execute(consumer2);
+
+      executorService.shutdown();
+
+To get a result back from a thread using executorService, use .submit(Callable) to get a result of type `Future` back:
+
+    Future<String> future = executorService.submit(new Callable<String>() {
+      @Override
+      public String call() throws Exception {
+        System.out.println(ThreadColor.ANSI_WHITE+ "I'm being printed from the callable class");
+        return "this is the callable result";
+      }
+    });
+
+    try {
+      String result = future.get();
+      System.out.println(result);
+    } catch (ExecutionException | InterruptedException e) {
+      e.printStackTrace();
+    }
+
+- in JavaFX, the JavaFX.concurrent package should be used as it doesn't block the UI thread
+
+[ExecutorService documentation](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html)
+
+### ArrayBlockingQueue Class
+
+See 020e_concurrent_ArrayBlockingQueue with comments
+
+### Deadlocks
+
+- occurs when 2 or more threads are blocked on locks (e.g. thread1 is holding lock on lock1 and waits, *nested*, for lock2, thread2 is holding lock2 and waits for lock1)
+- possible solutions: make threads obtain locks in the same order
+- applies e.g. to nested block acquisition
+
+- another way for a deadlock to occur is 2 classes with synchronized methods calling methods from the other class
+- see 020g_more_deadlocks_SayHello
+
+- Strategies if deadlocked:
+  - is a set of locks being obtained in a different order by multiple threads? If yes, can these be changed to obtain the locks in the same order?
+  - Are we oversynchronizing the code?
+  - Can we rewrite the code to break any circular call patterns?
+  - would using ReentrantLocks help?
+  - is there a wait() method in the code that releases a lock before exiting a synchronized block?
+
+### Thread starvation
+
+- threads don't lock but rarely have the opportunity to run
+- often caused by thread priority (`threadObj.setPriority(int);`)
+- thread priority is a suggestion to the OS and not binding
+
+### Fair locks and live locks
+
+#### Fair lock
+
+- fair = first come, first served
+- not all locks support fairness parameter
+- example: `ReentrantLock(true);`
+- only fairness in acquiring lock is guaranteed, not thread scheduling
+- fair locks can impact performance as they add an extra layer
+
+#### Livelock
+
+> **Livelock** occurs when two or more processes continually repeat the same interaction in response to changes in the other processes without doing any useful work. These processes are not in the waiting state, and they are running concurrently. This is different from a deadlock because in a deadlock all processes are in the waiting state.  
+https://www.geeksforgeeks.org/deadlock-starvation-and-livelock/
+
+#### Slipped condition:
+
+- can occur when a thread can be suspended between reading a condition and acting on it
+- e.g. two threads read from buffer by 
+  - checking status,
+  - read buffer if OK
+  - if data is EOF sets status to EOF and terminates, otherwise sets status to OK
+- If not synchronized properly, this can happen:
+  - t1 checks status, gets ok, suspends
+  - t2 checks status, gets ok, reads EOF and sets status to EOF and terminates
+  - t1 runs again and tries to read data from buffer (as it still "thinks" it's OK), but doesn't get any data and crashes
+- Solution: synchronized / locks like always
+
+  
+### Other Thread issues
+
+Problem:
+
+- each thread has a cpu cache which can contain copies of values in main memory
+- if threads run on different cpus (cores) with their own cache, the caches can become out of sync with each other
+- this can happen even to atomic operations such as assigning / reading an `int` variable 
+
+Solution(s):
+
+- volatile variables (atomic action that can't be suspended);
+- the JVM writes the value back to main memory immediately after the thread updates the value in its CPU cache, guaranteeing that every time a thread reads from a volatile variable, it gets the lates value.
+- Usage. `public volatile int counter;`;
+- Code using volatile variables must still be synchronized as if more than one thread can update a variable, we can still get a race condition
+  - e.g. `counter++;`, which is a non-atomic operation (read counter value, add 1 to counter, write counter value back to memory)
+- common usage for volatile: long or double variables (non-atomic)  
+- when only 1 thread can change the value of a shared variable, or none of the threads updates the value of a shared variable in a way that depends on its existing value, using `volatile` means that we don't need to synchronize the code for this variable as the value in memory will always be the latest value.
+
+- [java.util.concurrent.atomic](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/package-summary.html) provides classes to ensure that reading / writing variables is atomic (it provides limited amount of types)
+- AtomicInteger can't be used as a substitute for an Integer object
+- `compareAndSet(expected value, new value)` -> only updates if value is expected value
+
+### JavaFX background threads
+
+- [javafx.concurrent.Task class](https://docs.oracle.com/javase/8/javafx/api/javafx/concurrent/Task.html)
+- every task that touches the UI must run on the JavaFX application thread
+- in Controller, Platform.runLater can be used to directly change UI elements; this is however not good practice 
+- A better way is to bind the data to the UI element
+
+sample.fxml:
+
+    <Button text="Get Employee names" onAction="#buttonPressed" GridPane.columnIndex="0" GridPane.rowIndex="0" prefWidth="400"/>
+    <ProgressBar fx:id="progressBar" GridPane.columnIndex="0" GridPane.rowIndex="1" prefWidth="400" />
+    <Label fx:id="progressLabel" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <ListView fx:id="listView" GridPane.rowIndex="3" GridPane.columnIndex="0" prefWidth="400"/>
+
+
+
+Controller.java:
+
+    public class Controller {
+      @FXML ProgressBar progressBar;
+      private Task<ObservableList<String>> task;
+      @FXML private ListView<String> listView;
+      @FXML private Label progressLabel;
+    
+      public void initialize() {
+    
+        task =
+            new Task<ObservableList<String>>() {
+              @Override
+              protected ObservableList<String> call() throws Exception {
+                String[] names = {"Peer", "Tim", "Jack", "Bill", "crazy german christina", "bob"};
+    
+                ObservableList<String> employees = FXCollections.observableArrayList();
+    
+                for (int i = 0; i < names.length; i++) {
+                  employees.add(names[i]);
+                  updateProgress(i + 1, 6);
+                  updateMessage("Added " + names[i] + " to the list");
+                  //updateValue(employees); throws exception as it's not a fx application thread
+                  Thread.sleep(200);
+                }
+                // just reset
+                updateProgress(0, 6);
+    
+                return employees;
+              }
+            };
+    
+        // Bind listview to the returned value of the task so it
+        // updates when ready
+        listView.itemsProperty().bind(task.valueProperty());
+        progressBar.progressProperty().bind(task.progressProperty());
+        progressLabel.textProperty().bind(task.messageProperty());
+      }
+    
+      @FXML
+      public void buttonPressed() {
+        new Thread(task).start();
+      }
+    }
+
+- One more way is to use `javafx.concurrent.Service` - **recommended way** as it allows the javafx runtime to manage threads for us
+
+EmployeeService.java:
+
+    public class EmployeeService extends Service<ObservableList<String>> {
+      @Override
+      protected Task<ObservableList<String>> createTask() {
+        return new Task<ObservableList<String>>() {
+          @Override
+          protected ObservableList<String> call() throws Exception {
+            //...
+            // same as in tasks example
+            return employees;
+          }
+        };
+      }
+    }
+
+Controller.java:
+
+    public class Controller {
+      @FXML ProgressBar progressBar;
+      @FXML private ListView<String> listView;
+      @FXML private Label progressLabel;
+      private Service<ObservableList<String>> service;
+    
+      public void initialize() {
+        service = new EmployeeService();
+        listView.itemsProperty().bind(service.valueProperty());
+        progressBar.progressProperty().bind(service.progressProperty());
+        progressLabel.textProperty().bind(service.messageProperty());
+        progressBar.visibleProperty().bind(service.runningProperty());
+        progressLabel.visibleProperty().bind(service.runningProperty());  
+      }
+    
+      @FXML
+      public void buttonPressed() {
+        service.start();
+      }
+    }
+
+- for refined code with disabled progressbar etc. refer to 020j_javafx_task_example
+
+### sidenotes:
+
+- for coloring console output, look in ThreadColor.java in 020a_threads (Just prepend to the output string)
+
+## Lambda Expressions
+
+- very similar to JS arrow functions
+- remove boilerplate code, e.g. for anonymous Runnable classes for threads:
+
+      // Anonymous class
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          // this is the only non-boilerplate code
+          System.out.println("printing from the Runnable anon");
+        }
+      }).start();
+      
+      // as a Lambda expression:
+      new Thread(() -> System.out.println("Printing from lambda runnable")).start();
+
+- 3 parts:
+  - argument list
+  - arrow token
+  - body
+  
+When the compiler sees a Lambda expression in the above example, what does it do?
+
+- It knows that one of the Thread constructors accepts a Runnable as a parameter
+- it knows Runnable interface has only one method
+- this way, it can match the body of the Lambda to the body of the only method of the interface that has to be implemented
+
+because of this, Lambda expressions can only be used with interfaces that contain only one method.
+
+- IntelliJ shows which method is overridden when clicking on the gutter icon beside the line number; If it's not shown, search "gutter" in project settings and enable lambda there (seems to be disabled by default)
+- like in JS, if there are mutliple statements in the lambda's body, use curly braces:
+
+      new Thread(() -> {
+        System.out.println("Printing from multiline lambda runnable");
+        System.out.println("Printing more from multiline  lambda runnable");
+      }).start();
+
+- this is to be avoided as lambda expressions are meant to be concise and a replacement only for short function bodies 
