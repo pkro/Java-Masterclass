@@ -2737,7 +2737,7 @@ Use NIO when working with the filesystem
 Use IO when reading and writing files and performance is an issue
 
 ## 15 Concurrency
-
+https://stackoverflow.com/questions/37813271/why-different-predicate-interfaces-n-java-8
 Key terms:
 
 - **process**: unit of execution that has it's own memory space
@@ -3186,9 +3186,12 @@ Controller.java:
 
 - for coloring console output, look in ThreadColor.java in 020a_threads (Just prepend to the output string)
 
-## Lambda Expressions
+## Lambda Expressions and functional interfaces
+
+### Lambda expressions
 
 - very similar to JS arrow functions
+- are always optional (syntactic sugar) as we can still always use anonymous classes in their stead
 - remove boilerplate code, e.g. for anonymous Runnable classes for threads:
 
       // Anonymous class
@@ -3207,17 +3210,40 @@ Controller.java:
   - argument list
   - arrow token
   - body
-  
+
+- [method references](https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html) can be used to make it even more to the point (single argument is implied):
+
+      // these all have the same result
+      myList.forEach(String s -> s.toUpperCase());
+      myList.forEach(s -> s.toUpperCase());
+      myList.forEach(String::toUpperCase);
+      
+
+
 When the compiler sees a Lambda expression in the above example, what does it do?
 
 - It knows that one of the Thread constructors accepts a Runnable as a parameter
 - it knows Runnable interface has only one method
 - this way, it can match the body of the Lambda to the body of the only method of the interface that has to be implemented
 
-because of this, Lambda expressions can only be used with interfaces that contain only one method.
+Because of this, Lambda expressions can only be used with functional interfaces. 
+
+- An interface with only single abstract method is called functional interface(or Single Abstract method interface), for example: Runnable, callable, ActionListener etc. Exceptions are functional interfaces such as [Comparator<T>](https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html), even though they have multiple methods (here: `compareTo`and `equals`).
+- We can use a Lambda here because `equals` always has a default implementation inherited from `Object`, so the only other method `compareTo` is unambigeous. Here, also the parameter types can be inferred by the compiler (`Employee`)
+
+      // Comparator using an anonymous class
+      Collections.sort(employees, new Comparator<Employee>() {
+        @Override
+        public int compare(Employee employee1, Employee employee2) {
+          return employee1.getName().compareTo(employee2.getName());
+        }
+      });
+      
+      // as a Lambda, overriding compareTo:
+      Collections.sort(employees, (employee1, employee2)->employee1.getName().compareTo(employee2.getName()));
 
 - IntelliJ shows which method is overridden when clicking on the gutter icon beside the line number; If it's not shown, search "gutter" in project settings and enable lambda there (seems to be disabled by default)
-- like in JS, if there are mutliple statements in the lambda's body, use curly braces:
+- like in JS, if there are multiple statements in the lambda's body, use curly braces:
 
       new Thread(() -> {
         System.out.println("Printing from multiline lambda runnable");
@@ -3225,3 +3251,195 @@ because of this, Lambda expressions can only be used with interfaces that contai
       }).start();
 
 - this is to be avoided as lambda expressions are meant to be concise and a replacement only for short function bodies 
+- for single parameters, parameter paranthesis can be omitted:
+
+      clickMeButton.setOnAction((e)-> System.out.println("Button clicked with cool kid lambda"));
+
+- Own interfaces can be implemented on the fly as well:
+
+
+    interface UpperConcat {
+      public String upperAndConcat(String s1, String s2);
+    }
+    
+    public final static String doStringStuff(UpperConcat uc, String s1, String s2) {
+      return uc.upperAndConcat(s1,s2);
+    }
+    
+    UpperConcat uc = (s1,s2) -> (s1+s2).toUpperCase();
+
+    // which now can be used like so:
+    String sillyString2 = doStringStuff(uc, "one String", "And another");
+
+    // or, as an anonymous implementation:
+    String sillyString2 = doStringStuff((s1,s2) -> (s1+s2).toUpperCase(), "one String", "And another");
+
+- A Lambda expression isn't a class but an expression (?)
+- Lambdas are treated like a nested code block {}
+
+- Variables from outside the scope of the lambda that are used IN the lambda must be final (or effectively final, meaning not being changes in any place in the code)
+- Variables are remembered by the lambda even if the scope the variable comes from doesn't exist anymore:
+
+
+      public void printValue() {
+        int number = 25;
+        Runnable r = () -> {
+          try {
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          System.out.println("the value is " + number); //25
+        };
+        new Thread(r).start();
+        // even though the function terminates before the thread 
+        //prints the number, it will still print 25
+      }
+
+- in enhanced for loops, a new variable is created for each iteration, so this still works:
+
+
+      for(Employee employee: employees) {
+        // employee is effectively final so it can be accessed
+        // in the Lambda expression
+        System.out.println(employee.getName());
+        new Thread(()-> System.out.println(employee.getAge())).start();
+      }
+
+- Since Java 8, functional interfaces have enhanced collections such as lists which now also have forEach etc. methods that can be used with lambdas:
+
+      employees.forEach(employee -> System.out.println(employee.getName()));
+
+
+
+### Functional interfaces & predicates
+
+Predicates: lambda expressions or (anonymous) class that match the [java.util.function.predicate](java.util.function.predicate) interface that accepts one parameter and returns boolean
+    
+    // with Lambda
+    printEmployeesByAge(employees, "Employees 30 and under", e->e.getAge()<=30);
+    // with anonymous class
+    printEmployeesByAge(employees, "Employees between 20 and 30", new Predicate<Employee>() {
+      @Override
+      public boolean test(Employee employee) {
+         return employee.getAge()>=20 && employee.getAge()<=30;
+      }
+    });
+
+    // example function just for reference
+    private static void printEmployeesByAge(List<Employee> employees, String ageText, Predicate<Employee> ageCondition) {
+      System.out.println(ageText);
+      for(Employee employee: employees) {
+        if(ageCondition.test(employee)) {
+          System.out.println(employee.getName());
+        }
+      }
+    }
+
+There are "specialized" predicates such as `IntPredicate`, which exist to avoid unnecessary autoboxing / unboxing when working with primitives for performance reasons.
+
+    IntPredicate intp = i -> i > 15;
+    System.out.println(intp.test(10)); // false
+
+Predicates can be chained with logical operators such as `.and` and `.or`:
+
+    IntPredicate gt15 = i -> i > 15;
+    IntPredicate lt30 = i -> i < 30;
+    System.out.println(gt15.and(lt30).test(50));
+    
+Supplier interface (code should explain most of it):
+    
+    Supplier<Integer> supplier = ()->new Random().nextInt(1000);
+
+    for (int i = 0; i<10;i++) {
+      System.out.println(supplier.get());
+    }
+
+- Suppliers don't allow parameters
+- Are often used in testing
+- have specialized versions such as `IntSupplier`, `BooleanSupplier` etc:
+
+
+    IntSupplier supplier = ()->new Random().nextInt(1000);
+    for (int i = 0; i<10;i++) {
+      System.out.println(supplier.getAsInt());
+    }
+
+To use parameters, use the `Function` interface with generics, indicating the parameter type and the return type separated by comma:
+
+    // get the last name of employee by questionable means
+    Function<Employee, String> getLastName =
+            employee -> employee.getName().substring(employee.getName().indexOf(' ') + 1);
+    
+    // first name function for later use    
+    Function<Employee, String> getFirstName =
+        employee -> employee.getName().substring(0,employee.getName().indexOf(' '));
+
+    String lastName = getLastName.apply(employees.get(0));
+
+Functions can be passed as parameters as well:
+
+    // class method
+    private static String getAName(Function<Employee, String> getName, Employee employee) {
+      return getName.apply(employee);
+    }
+
+    // in Main or wherever:
+    System.out.println(getAName(getFirstName, john)); // John
+    System.out.println(getAName(getLastName, john)); // Doe
+
+... which makes them, of course, useful for callbacks.
+
+Functions can be chained together like predicates:
+
+    Function<Employee, String> upperCase = employee -> employee.getName().toUpperCase();
+    Function<String, String> firstName = name -> name.substring(0, name.indexOf(' '));
+    // using andThen, function evaluation is left --> right
+    Function<Employee, String> chainedFunction = upperCase.andThen(firstName);
+    // using compose, function evaluation is left <-- right (right one first) 
+    Function<Employee, String> composedVersion = firstName.compose(upperCase);
+
+    System.out.println(chainedFunction.apply(john)); // JOHN
+    System.out.println(composedVersion.apply(john)); // JOHN
+
+Functions with multiple arguments can be done with `BiFunction`
+
+    BiFunction<String, Employee, String> concatAge =
+            (String name, Employee employee) -> name.concat(" " + employee.getAge());
+    String upperName = upperCase.apply(john);
+    System.out.println(concatAge.apply(upperName, john)); // JOHN DOE 30
+
+BiFunctions can only be the first function in a chain so it doesn't have a compose method, only andThen.
+
+Unary operators (spezialization of function that operates on a single operand and returns a result of the same type as the operand)
+
+    IntUnaryOperator incBy5 = i->i+5;
+    System.out.println(incBy5.applyAsInt(10));
+
+Overview of the Java.util.function interfaces:
+
+![Overview of the Java.util.function interfaces](images/function.png "Overview of the Java.util.function interfaces")
+
+### Streams
+
+- sequence of chained computations
+- [Stream interface docu](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
+- set of object references
+- each step of a stream operation must be stateless (not depending on state outside of the operation)
+- each stream operation works on the results of the last step in the chain
+- each stream method (map, filter, forEach etc.) return a new stream (note that the Stream class forEach is not the same as the `Collection`s forEach)
+- forEach doesn't return a value so it must be the last step (terminal operation) as opposed to intermediate operations
+
+Example (print a sorted list of items starting with "G"):
+    
+    List<String> someBingoNumbers =
+        Arrays.asList("N40", "B10", "N46", "B6", "g53", "G49", "G60", "I17", "I26", "O71");
+    someBingoNumbers
+                .stream()
+                .map(String::toUpperCase) // method reference notation, same as s -> s.toUpperCase()
+                .filter(n -> n.startsWith("G")) 
+                .sorted()
+                .forEach(s -> System.out.println(s)); // terminal operation
+
+
+![Example explanation](images/streams.png "Example streams")
