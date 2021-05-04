@@ -3365,7 +3365,8 @@ Supplier interface (code should explain most of it):
       System.out.println(supplier.getAsInt());
     }
 
-To use parameters, use the `Function` interface with generics, indicating the parameter type and the return type separated by comma:
+To use parameters, use the `Function` interface with generics, indicating the parameter type and the return type separated by comma.  
+Functions must be called with apply `fname.apply(argument)` and not like a method `fname(argument)`
 
     // get the last name of employee by questionable means
     Function<Employee, String> getLastName =
@@ -3389,6 +3390,11 @@ Functions can be passed as parameters as well:
     System.out.println(getAName(getLastName, john)); // Doe
 
 ... which makes them, of course, useful for callbacks.
+
+Functions without parameters can use the java.util.Supplier interface, where only the return type is defined, and are called with `.get()` instead of `apply`:
+
+    Supplier<String> iLoveJava = () -> "I love Java";
+    System.out.println(iLoveJava.get());
 
 Functions can be chained together like predicates:
 
@@ -3422,6 +3428,8 @@ Overview of the Java.util.function interfaces:
 
 ### Streams
 
+#### Overview
+
 - sequence of chained computations
 - [Stream interface docu](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
 - set of object references
@@ -3443,3 +3451,81 @@ Example (print a sorted list of items starting with "G"):
 
 
 ![Example explanation](images/streams.png "Example streams")
+
+Streams can be instantiated using `of`:
+
+    Stream<String> ioNumberStream = Stream.of("I26", "I17", "I29", "O71");
+    Stream<String> inNumberStream = Stream.of("N40", "N36", "I26", "I17", "I29", "O71");
+    Stream<String> concatStream = Stream.concat(ioNumberStream, inNumberStream);
+    System.out.println(concatStream.distinct().count());
+
+To use side effect in an intermediate operation, e.g. printing it out, either `peek` or just `map` with a return in the lambda function body can be used:
+
+    concatStream.map(s->{System.out.println(s); return s; }).doOtherStreamStuff();
+    concatStream.peek(System.out::println);
+
+`.peek` is mostly used for debugging to view intermediate results of stream operations
+
+#### FlatMap / collect / reduce
+
+`FlatMap` intended use: flattens nested lists (or rather streams)
+
+`departments.stream().flatMap(department -> department.getEmployees().stream())
+    .forEach(System.out::println);`
+
+[collect / Collectors](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html) is used to reduce and/or store the content of the stream at the end of the chain
+
+Example using `collect` with `Collectors.toList()`, see other interesting examples in doc (groupBy etc)
+
+    List<String> sortedGNumbers =
+                someBingoNumbers.stream()
+                        .map(String::toUpperCase)
+                        .filter(s -> s.startsWith("G"))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+Example using supplier, accumulator and collector as arguments (supplier (creates objects), accumulator (used to add single item), combiner (used by java to improve efficiency of operation))
+
+    List<String> sortedGNumbers =
+            someBingoNumbers.stream()
+                    .map(String::toUpperCase)
+                    .filter(s -> s.startsWith("G"))
+                    .sorted()
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+`reduce`: 3 versions; example of version that accepts "by function":
+    
+    // get younges employee
+    departments.stream()
+            .flatMap(department -> department.getEmployees().stream())
+            .reduce((em1, em2) -> em1.getAge() < em2.getAge() ? em1 : em2)
+            .ifPresent(System.out::println); 
+
+This reduce version has an optional result so ifPresent is used to do the terminal operation of the stream.
+
+- Streams can't be reused
+- operations in a stream are lazily evaluated, meaning they are not performed until there's a terminal operation
+  
+      Stream.of("ABC", "AC", "BAA", "CCCC", "XY", "ST")
+          .filter(
+              s -> {
+                // this doesn't print out anything if we leave off 
+                // the forEach at the end
+                System.out.println(s); 
+                return s.length() == 3;
+              })
+          .count(); // terminal operation
+
+- Lists of numbers have more specialized interfaces (IntStream, LongStream...) with additional methods
+- parallel streams to increase performance
+
+### Lambda best practices
+
+- same as in JS
+- don't abuse lambdas for long functions;
+- specify parameter types if it makes it easier to read 
+- use return statement if it makes it easier to understand; use the same style in the same file
+
+
+
+### Intellij sidenote: if classes in package aren't recognized (but the project still runs), use file-> invalidate caches
