@@ -3526,6 +3526,74 @@ This reduce version has an optional result so ifPresent is used to do the termin
 - specify parameter types if it makes it easier to read 
 - use return statement if it makes it easier to understand; use the same style in the same file
 
-
-
 ### Intellij sidenote: if classes in package aren't recognized (but the project still runs), use file-> invalidate caches
+
+## Regex
+
+- good overview: [Pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html), [Matcher](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html)
+- simplest regular expression is just a string like " "
+- Intellij has a quick regex text in the line context menu (alt-enter)
+- replacing using regeg: `String.replaceAll`, `replace`
+- matching: `String.matches` (**WHOLE** String must match the regex)
+- no // in regex parameter
+- usual regex still apply:
+  - ^ = start of line
+  - $ = end of line
+  - [] for sets of matchers (e.g.[123a-z])
+  - [^abc] for negation
+  - case insensitive (ascii): `replaceAll("(?i)[a-c]", "replaced")`
+  - case insensitive (unicode): `replaceAll("(?iu)[a-c]", "replaced")`
+  - case insensitive (unicode): `replaceAll("(?iu)[a-c]", "replaced")`
+  - digits: "\\d" (not the escaped slash)
+  - non-digits: "\\D" (not the escaped slash)
+  - whitespace, tab, newline: "\\s"
+  - non-whitespace: \\S     
+  - specific: \t, \n etc.
+  - [a-zA-Z_] = \\w, [^a-zA-Z_] = \\W
+  - word boundaries: \\b, e.g. "i am fine".replaceAll("\\b", "#") = "#i# #am# #fine#"
+  - quantifiers: 
+    - Ax{3} = Axxx
+    - Ax{3,5} = Axxx, Axxxx, Axxxxx
+    - Ax+ = Ax, Axx, Axxx, Axxxxx...
+    - Ax* = A, Ax, Axx... 
+    - h+i*j = one or more h followed by 0 or more i followed by j
+  - grouping with `()` as usual; can be accessed with `matcher.group(1)` (for first group)
+  - non greedy (lazy) modifier: `?`, e.g. `<h2>.*?</h2>`
+  - `*` = zero or more, `+` = one or more
+  - `|` = or, e.g. `"harry".replaceAll("[H|h]arry", "Larry")`
+  - `^` in `[]` = not, e.g. `[^abc]` = none of abc
+  - look ahead: `(?...)` 
+    - doesn't consume a character -> aren't part of the match
+    - not / negative look ahead: `t(?!v)` = t with no v following  
+    - postive look ahead: `(?=v)`, t **with** v following
+  
+
+[Matcher](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html):
+
+> An engine that performs match operations on a character sequence by interpreting a Pattern.
+    
+    String htmlText = "I am looking for some <h2>headline</h2>!";
+    String h2PatternFull = ".*<h2>.*";
+    Pattern pattern = Pattern.compile(h2PatternFull);
+    Matcher matcher = pattern.matcher(htmlText);
+    System.out.println(matcher.matches()); // true, as whole string is matched
+
+    String h2Pattern = "<h2>";
+    pattern = Pattern.compile(h2Pattern);
+    matcher = pattern.matcher(htmlText);
+    System.out.println(matcher.find()); // true, as string contains <h2>
+
+- A matcher must be reset using `matcher.reset();` for reuising it and has an internal state that is updated upon usage, containing e.g. .start() or .end() of match
+- `matcher.matches()`: The whole string has to match the pattern
+- `matcher.find()`: finds matches in string 
+- `matcher.end()`: index of first character *after* match
+
+Using groups to find specific parts in a string:
+
+    String h2TextGroups = "(<h2>)(.+?)(</h2>)";
+    Pattern h2TextPattern = Pattern.compile(h2TextGroups);
+    groupMatcher = h2TextPattern.matcher(htmlText);
+    while(groupMatcher.find()) {
+      System.out.println(groupMatcher.group(2));
+    }
+
