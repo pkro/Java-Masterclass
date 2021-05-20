@@ -2325,7 +2325,7 @@ Scanner closes any stream it is using automatically if the scanner instance is c
 
 #### Serialization
 
-- makes it possible to store the object in its entirety instead of storing the members values and then reassembling it when reading them back 
+- makes it possible to store the object in its entirety instead of storing the members values and then reassembling it when reading them back
 - to make an object / class serializable, it has to implement the Serializable interface
 - when making a class serializable, it is strongly recommended adding a long field serialVersionUID, e.g. `private long serialVersionUID = 1L;`
   - this is basically a version number of the class to ensure it is compatible with the current class version when reading it in
@@ -2334,11 +2334,11 @@ Scanner closes any stream it is using automatically if the scanner instance is c
 - Serializable doesn't have any methods to implement
 - non-primitive types (HashMaps etc.) must also implement the serializable interface in order to be able to be automatically be serialized (most do)
 - when using own classes / types as fields, these must be made serializable
-- otherwise, this is all there is to it (add `implements Serializable` and `serialVersionUID`) 
+- otherwise, this is all there is to it (add `implements Serializable` and `serialVersionUID`)
 - instead of DataOutputStream, ObjectOutputStream is used to write serialized object
   
 Example serialization of the adventure game code:
-    
+
     // Location.java
     public final class Location implements Serializable {
       // ...
@@ -2445,7 +2445,7 @@ Notes on random access file opening modes:
 >rw only flushes when you tell it to and doesn't change the modifcation date until you close the file.  
 >BTW rwd is much slower for writes than rw, and rws is slower again.
 
-*https://stackoverflow.com/questions/14232539/java-randomaccessfile-mode-rws-vs-rwd*
+*<https://stackoverflow.com/questions/14232539/java-randomaccessfile-mode-rws-vs-rwd>*
 
 Reading in the index example file:
 
@@ -2487,7 +2487,6 @@ Reading in an entry using the index map:
       return location;
     }
 
-
 - the readUTF method knows the amount of data it must read because it creates its own header indicating the string length, followed by the string itself.
 
 #### Java NIO
@@ -2495,7 +2494,7 @@ Reading in an entry using the index map:
 [good java.nio documentation @ jenkov.com](http://tutorials.jenkov.com/java-nio/index.html)
 
 - introduced in Java 1.4
-- improved Java IO: 
+- improved Java IO:
   - non-blocking: threads will not block the thread when waiting to read/write; criticisms include that non-blocking IO is slower than blocking IO
 - more complex than java IO
 - deals with data in blocks instead of characters and binary
@@ -2517,7 +2516,7 @@ Reading in an entry using the index map:
 - to use a datasource as a channel, a class that implements the java.NIO.Channel interface is needed
 - buffer is a typed container for the data that's being r/w
 - selectors manage single thread (?)
-- only one datasource needed for read / write as opposed to 2 in java.IO; Exception from the rule: File input stream channel is only opened for reading 
+- only one datasource needed for read / write as opposed to 2 in java.IO; Exception from the rule: File input stream channel is only opened for reading
 
 Example read/write utf8
 
@@ -2537,13 +2536,13 @@ Example read/write utf8
 
 > A buffer is essentially a block of memory into which you can write data, which you can then later read again. This memory block is wrapped in a NIO Buffer object, which provides a set of methods that makes it easier to work with the memory block.  
 >Using a Buffer to read and write data typically follows this little 4-step process:
+>
 >- Write data into the Buffer
 >- Call buffer.flip()
 >- Read data out of the Buffer
 >- Call buffer.clear() or buffer.compact()
 
-(http://tutorials.jenkov.com/java-nio/buffers.html)
-
+(<http://tutorials.jenkov.com/java-nio/buffers.html>)
 
 - terminology:
   - buffer capacity: num of elements it can contain
@@ -2554,7 +2553,6 @@ Example read/write utf8
 - alternatively , the index to start on can be passed to the readInt method (absolute read): `intBuffer.getInt(0)`
   - this also doesn't advance the buffers position
 - don't mix relative and absolute read in code
-
 
       RandomAccessFile ra = new RandomAccessFile(DATA_FILE, "rwd");
       FileChannel channel = ra.getChannel();
@@ -2676,25 +2674,23 @@ DirectoryStream
 - accepts an optional filter (glob) as a second parameter, similar to regex;
 - "real" regex can be used as well
 - Examples:
-    - * = any string
-    - *.dat
-    - *.{dat,txt}
-    - b???.txt
-    - myFile*
-    - b?*.txt // starts with b, at least one more character ("?"), zero or more additonal characters
+  - * = any string
+  - *.dat
+  - *.{dat,txt}
+  - b???.txt
+  - myFile*
+  - b?*.txt // starts with b, at least one more character ("?"), zero or more additonal characters
 
-
-    try (DirectoryStream<Path> contents = 
-            Files.newDirectoryStream(directory, 
-            "*.{dat,txt}")) {
-      for (Path path : contents) {
-        System.out.println(path.toString());
-      }
-    } catch (IOException | DirectoryIteratorException e) {
-      //...
+        try (DirectoryStream<Path> contents =
+                Files.newDirectoryStream(directory,
+                "*.{dat,txt}")) {
+          for (Path path : contents) {
+            System.out.println(path.toString());
+          }
+        } catch (IOException | DirectoryIteratorException e) {
+          //...
 
 - advanced / attribute filters can be done with `DirectoryStream.Filter<Path>`, which has only one method (`accept`) to override:
-
 
       DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
           @Override
@@ -2731,13 +2727,14 @@ Walking a file tree:
 
 - see 019k_directories
 
-### File section Fazit:
+### File section Fazit
 
 Use NIO when working with the filesystem
 Use IO when reading and writing files and performance is an issue
 
 ## 15 Concurrency
-https://stackoverflow.com/questions/37813271/why-different-predicate-interfaces-n-java-8
+
+<https://stackoverflow.com/questions/37813271/why-different-predicate-interfaces-n-java-8>
 Key terms:
 
 - **process**: unit of execution that has it's own memory space
@@ -2761,7 +2758,7 @@ The JVM and OS ultimately decides when threads are scheduled to run, though we c
 #### Subclassing `Thread`
 
 The task we want to run in a thread must be wrapped in a subclass of Thread, and specifically in it's `run` method. This can also be done in an anonymous class (in that case it is / must be instantiated immediately). When using the same class, it must be instantiated for each new thread.
-    
+
     // AnotherThread.java
     public class AnotherThread extends Thread {
       @Override
@@ -2807,13 +2804,13 @@ The task we want to run in a thread must be wrapped in a subclass of Thread, and
               }
             }).start();
 
-- Common mistake: using the run() method instead of start(); This results in the thread being started on the thread that inits the thread, e.g. the main thread 
+- Common mistake: using the run() method instead of start(); This results in the thread being started on the thread that inits the thread, e.g. the main thread
 
 - Threads can be put to sleep (Thread.sleep depends on OS functions and length is not guaranteed) and can be woken up by other threads. See 020a_threads.
-  - threads can know if they're being interruped by catching the `InterruptedException` or by checking the interrupted() method regularly 
+  - threads can know if they're being interruped by catching the `InterruptedException` or by checking the interrupted() method regularly
 
 - Threads can be joined to postpone operations until another thread is done; the join method can be passed a timeout value to avoid hanging if the joined thread never terminates
-      
+
       //...
       public void run() {
         System.out.println(ThreadColor.ANSI_CYAN + "Hello from anonymous Runnable");
@@ -2846,7 +2843,6 @@ The task we want to run in a thread must be wrapped in a subclass of Thread, and
   - exception: local string variables can be used to synchronize because of javas internal workings (string pools) (?)
   - this can be done with the reference of the object itself
 
-    
     synchronized (this) {
       for (i = 10; i > 0; i--) { // uses instance variable i
         System.out.println(color + Thread.currentThread().getName() + ": i = " + i);
@@ -2868,7 +2864,7 @@ or the not thread safe object that is accessed:
   
 - static objects and methods can be synchronized as well, in that case the Class owns the lock associated with the object's class
 - A thread can acquire an object it already owns (?)
-- always synchronize the smallest amount of code possible (don't oversynchronize), so for small functions `synchronized` in the method signature is fine, for larger ones use synchronized blocks to apply synchronization only to the relevant parts 
+- always synchronize the smallest amount of code possible (don't oversynchronize), so for small functions `synchronized` in the method signature is fine, for larger ones use synchronized blocks to apply synchronization only to the relevant parts
 
 Terminology
 
@@ -2879,7 +2875,7 @@ Terminology
 - None of the javaFX components are thread safe, that's the reason only the javafx main thread can change UI componentes
 - When synchronizing code, *only* synchronize the parts that *needs* to be synchronized to avoid unnecessary blocking of threads
 
-- Java provides methods wait, notify, notifyAll to avoid deadlocks caused by using loops to wait for input from another thread; see `020c_Messages_(Producer_consumer)` 
+- Java provides methods wait, notify, notifyAll to avoid deadlocks caused by using loops to wait for input from another thread; see `020c_Messages_(Producer_consumer)`
 
       public synchronized String read() {
         // loop until there is a message to read, used by consumer
@@ -3040,12 +3036,12 @@ See 020e_concurrent_ArrayBlockingQueue with comments
 #### Livelock
 
 > **Livelock** occurs when two or more processes continually repeat the same interaction in response to changes in the other processes without doing any useful work. These processes are not in the waiting state, and they are running concurrently. This is different from a deadlock because in a deadlock all processes are in the waiting state.  
-https://www.geeksforgeeks.org/deadlock-starvation-and-livelock/
+<https://www.geeksforgeeks.org/deadlock-starvation-and-livelock/>
 
-#### Slipped condition:
+#### Slipped condition
 
 - can occur when a thread can be suspended between reading a condition and acting on it
-- e.g. two threads read from buffer by 
+- e.g. two threads read from buffer by
   - checking status,
   - read buffer if OK
   - if data is EOF sets status to EOF and terminates, otherwise sets status to OK
@@ -3055,14 +3051,13 @@ https://www.geeksforgeeks.org/deadlock-starvation-and-livelock/
   - t1 runs again and tries to read data from buffer (as it still "thinks" it's OK), but doesn't get any data and crashes
 - Solution: synchronized / locks like always
 
-  
 ### Other Thread issues
 
 Problem:
 
 - each thread has a cpu cache which can contain copies of values in main memory
 - if threads run on different cpus (cores) with their own cache, the caches can become out of sync with each other
-- this can happen even to atomic operations such as assigning / reading an `int` variable 
+- this can happen even to atomic operations such as assigning / reading an `int` variable
 
 Solution(s):
 
@@ -3082,7 +3077,7 @@ Solution(s):
 
 - [javafx.concurrent.Task class](https://docs.oracle.com/javase/8/javafx/api/javafx/concurrent/Task.html)
 - every task that touches the UI must run on the JavaFX application thread
-- in Controller, Platform.runLater can be used to directly change UI elements; this is however not good practice 
+- in Controller, Platform.runLater can be used to directly change UI elements; this is however not good practice
 - A better way is to bind the data to the UI element
 
 sample.fxml:
@@ -3091,8 +3086,6 @@ sample.fxml:
     <ProgressBar fx:id="progressBar" GridPane.columnIndex="0" GridPane.rowIndex="1" prefWidth="400" />
     <Label fx:id="progressLabel" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
     <ListView fx:id="listView" GridPane.rowIndex="3" GridPane.columnIndex="0" prefWidth="400"/>
-
-
 
 Controller.java:
 
@@ -3182,7 +3175,7 @@ Controller.java:
 
 - for refined code with disabled progressbar etc. refer to 020j_javafx_task_example
 
-### sidenotes:
+### sidenotes
 
 - for coloring console output, look in ThreadColor.java in 020a_threads (Just prepend to the output string)
 
@@ -3217,8 +3210,6 @@ Controller.java:
       myList.forEach(String s -> s.toUpperCase());
       myList.forEach(s -> s.toUpperCase());
       myList.forEach(String::toUpperCase);
-      
-
 
 When the compiler sees a Lambda expression in the above example, what does it do?
 
@@ -3226,7 +3217,7 @@ When the compiler sees a Lambda expression in the above example, what does it do
 - it knows Runnable interface has only one method
 - this way, it can match the body of the Lambda to the body of the only method of the interface that has to be implemented
 
-Because of this, Lambda expressions can only be used with functional interfaces. 
+Because of this, Lambda expressions can only be used with functional interfaces.
 
 - An interface with only single abstract method is called functional interface(or Single Abstract method interface), for example: Runnable, callable, ActionListener etc. Exceptions are functional interfaces such as [Comparator<T>](https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html), even though they have multiple methods (here: `compareTo`and `equals`).
 - We can use a Lambda here because `equals` always has a default implementation inherited from `Object`, so the only other method `compareTo` is unambigeous. Here, also the parameter types can be inferred by the compiler (`Employee`)
@@ -3250,22 +3241,21 @@ Because of this, Lambda expressions can only be used with functional interfaces.
         System.out.println("Printing more from multiline  lambda runnable");
       }).start();
 
-- this is to be avoided as lambda expressions are meant to be concise and a replacement only for short function bodies 
+- this is to be avoided as lambda expressions are meant to be concise and a replacement only for short function bodies
 - for single parameters, parameter paranthesis can be omitted:
 
       clickMeButton.setOnAction((e)-> System.out.println("Button clicked with cool kid lambda"));
 
 - Own interfaces can be implemented on the fly as well:
 
-
     interface UpperConcat {
       public String upperAndConcat(String s1, String s2);
     }
-    
+
     public final static String doStringStuff(UpperConcat uc, String s1, String s2) {
       return uc.upperAndConcat(s1,s2);
     }
-    
+
     UpperConcat uc = (s1,s2) -> (s1+s2).toUpperCase();
 
     // which now can be used like so:
@@ -3279,7 +3269,6 @@ Because of this, Lambda expressions can only be used with functional interfaces.
 
 - Variables from outside the scope of the lambda that are used IN the lambda must be final (or effectively final, meaning not being changes in any place in the code)
 - Variables are remembered by the lambda even if the scope the variable comes from doesn't exist anymore:
-
 
       public void printValue() {
         int number = 25;
@@ -3298,7 +3287,6 @@ Because of this, Lambda expressions can only be used with functional interfaces.
 
 - in enhanced for loops, a new variable is created for each iteration, so this still works:
 
-
       for(Employee employee: employees) {
         // employee is effectively final so it can be accessed
         // in the Lambda expression
@@ -3310,12 +3298,10 @@ Because of this, Lambda expressions can only be used with functional interfaces.
 
       employees.forEach(employee -> System.out.println(employee.getName()));
 
-
-
 ### Functional interfaces & predicates
 
 Predicates: lambda expressions or (anonymous) class that match the [java.util.function.predicate](java.util.function.predicate) interface that accepts one parameter and returns boolean
-    
+
     // with Lambda
     printEmployeesByAge(employees, "Employees 30 and under", e->e.getAge()<=30);
     // with anonymous class
@@ -3346,9 +3332,9 @@ Predicates can be chained with logical operators such as `.and` and `.or`:
     IntPredicate gt15 = i -> i > 15;
     IntPredicate lt30 = i -> i < 30;
     System.out.println(gt15.and(lt30).test(50));
-    
+
 Supplier interface (code should explain most of it):
-    
+
     Supplier<Integer> supplier = ()->new Random().nextInt(1000);
 
     for (int i = 0; i<10;i++) {
@@ -3358,7 +3344,6 @@ Supplier interface (code should explain most of it):
 - Suppliers don't allow parameters
 - Are often used in testing
 - have specialized versions such as `IntSupplier`, `BooleanSupplier` etc:
-
 
     IntSupplier supplier = ()->new Random().nextInt(1000);
     for (int i = 0; i<10;i++) {
@@ -3439,7 +3424,7 @@ Overview of the Java.util.function interfaces:
 - forEach doesn't return a value so it must be the last step (terminal operation) as opposed to intermediate operations
 
 Example (print a sorted list of items starting with "G"):
-    
+
     List<String> someBingoNumbers =
         Arrays.asList("N40", "B10", "N46", "B6", "g53", "G49", "G60", "I17", "I26", "O71");
     someBingoNumbers
@@ -3448,7 +3433,6 @@ Example (print a sorted list of items starting with "G"):
                 .filter(n -> n.startsWith("G")) 
                 .sorted()
                 .forEach(s -> System.out.println(s)); // terminal operation
-
 
 ![Example explanation](images/streams.png "Example streams")
 
@@ -3494,7 +3478,7 @@ Example using supplier, accumulator and collector as arguments (supplier (create
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
 `reduce`: 3 versions; example of version that accepts "by function":
-    
+
     // get younges employee
     departments.stream()
             .flatMap(department -> department.getEmployees().stream())
@@ -3523,7 +3507,7 @@ This reduce version has an optional result so ifPresent is used to do the termin
 
 - same as in JS
 - don't abuse lambdas for long functions;
-- specify parameter types if it makes it easier to read 
+- specify parameter types if it makes it easier to read
 - use return statement if it makes it easier to understand; use the same style in the same file
 
 ### Intellij sidenote: if classes in package aren't recognized (but the project still runs), use file-> invalidate caches
@@ -3547,31 +3531,30 @@ This reduce version has an optional result so ifPresent is used to do the termin
   - digits: "\\d" (not the escaped slash)
   - non-digits: "\\D" (not the escaped slash)
   - whitespace, tab, newline: "\\s"
-  - non-whitespace: \\S     
+  - non-whitespace: \\S
   - specific: \t, \n etc.
   - [a-zA-Z_] = \\w, [^a-zA-Z_] = \\W
   - word boundaries: \\b, e.g. "i am fine".replaceAll("\\b", "#") = "#i# #am# #fine#"
-  - quantifiers: 
+  - quantifiers:
     - Ax{3} = Axxx
     - Ax{3,5} = Axxx, Axxxx, Axxxxx
     - Ax+ = Ax, Axx, Axxx, Axxxxx...
-    - Ax* = A, Ax, Axx... 
+    - Ax* = A, Ax, Axx...
     - h+i*j = one or more h followed by 0 or more i followed by j
   - grouping with `()` as usual; can be accessed with `matcher.group(1)` (for first group)
   - non greedy (lazy) modifier: `?`, e.g. `<h2>.*?</h2>`
   - `*` = zero or more, `+` = one or more
   - `|` = or, e.g. `"harry".replaceAll("[H|h]arry", "Larry")`
   - `^` in `[]` = not, e.g. `[^abc]` = none of abc
-  - look ahead: `(?...)` 
+  - look ahead: `(?...)`
     - doesn't consume a character -> aren't part of the match
     - not / negative look ahead: `t(?!v)` = t with no v following  
     - postive look ahead: `(?=v)`, t **with** v following
   
-
 [Matcher](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html):
 
 > An engine that performs match operations on a character sequence by interpreting a Pattern.
-    
+
     String htmlText = "I am looking for some <h2>headline</h2>!";
     String h2PatternFull = ".*<h2>.*";
     Pattern pattern = Pattern.compile(h2PatternFull);
@@ -3585,7 +3568,7 @@ This reduce version has an optional result so ifPresent is used to do the termin
 
 - A matcher must be reset using `matcher.reset();` for reuising it and has an internal state that is updated upon usage, containing e.g. .start() or .end() of match
 - `matcher.matches()`: The whole string has to match the pattern
-- `matcher.find()`: finds matches in string 
+- `matcher.find()`: finds matches in string
 - `matcher.end()`: index of first character *after* match
 
 Using groups to find specific parts in a string:
@@ -3597,3 +3580,51 @@ Using groups to find specific parts in a string:
       System.out.println(groupMatcher.group(2));
     }
 
+## Debugging and unit testing
+
+### Debugging
+
+- Debugger is used to check state of running application, step through it, change variables
+- Most libraries come in version with and without debugging information
+- As timing is different / slower, thread issues can be difficult to debug
+
+- when debugging, the debugger connects to the application by a socket (over IP:port)
+
+![debugger](images/debugger.png)
+
+- set breakpoints by click in gutter or ctrl-f8
+- the current highlighted line is *not yet* executed, exception when step into / step out, see below
+- left: stacktrace (stack of method calls ordered bottom to top)
+- Pulldown above stack: choose other threads
+- right: variables of selected frame (method)
+- debugger layout can be changed with icon on the far right (not in screenshot)
+- clicking on current frame on stacktrace shows variables on the right and jumps to calling context in src
+- variables (such as `this`) can be expanded to show member variables of the objects
+- parameter variables are marked with a `p`
+- resule (left arrow on vertical pane far left): continue execution until next breakpoint is reached
+- three line icon to left of "step over" jumps to the current execution point in the code
+- step over: executes statement without jumping inside the methods on that line (though still executing them of course)
+- step into: jumps into the method called on that line; by default doesn't jump into JDK or 3rd party libraries methods unless "force step into" is clicked instead
+- step out: runs the rest of the method, returns to the caller and suspends; when stepping out, the line highlighted by the debugger has been executed (at least up until the method call we've stepped into)
+- drop frame: let's us rewind the application by one frame; not everything can be rewound (changes to static or instance variables, database changes etc can't be undone)
+- run to coursor: self explanatory; avoids having to set a break point for a one time check
+  - this seems to stop at intermediate breakpoints before, maybe a Intellij setting issue?
+  - best practice: **reduce breakpoints to a minimum and use run to cursor in most cases**
+- Run -> view breakpoints... shows all breakpoints and lets us remove them
+- watches (glasses icon): tracked variables, some are set as watches by intellij (which? why?)
+  - to set a member variable as a watch, right click in variables pane in the debugger and select "add to watches"
+  - turns blue when the last statement executed changed its value
+  - watches can be set in own pane (glasses icon)
+- Field watchpoint: special breakpoint that halts when the variable to which the watchpoint is set is updated; click in gutter in line where variable is declared to set watchpoint
+  - can also be set under run->view breakpoints
+  - by right clicking on the watchpoint we can enable to break on field *access* too, more options in run->view breakpoints (remove once hit etc.)
+- right click on variable and set value to set values on the fly
+- To make 3rd party libraries debugable, download binary and source; add binary using "project structure"->libraries->**+**, add binary; then select the library and click on the + on the right side to add the source for the library
+
+![add source](images/addsource.png "add source")
+
+### Unit testing
+
+- "unit" usually refers to a method
+
+-
