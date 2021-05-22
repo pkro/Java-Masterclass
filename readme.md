@@ -27,7 +27,7 @@
   - width: 32 bit
   - used by default by java for numbers
   - when adding 1 to Integer.MAX_VALUE, it overflows (**rolls over**) (to Integer.MIN_VALUE) and reverse
-  - when assigning a value hiher than MAX_VALUE, a compiler error occurs
+  - when assigning a value higher than MAX_VALUE, a compiler error occurs
   - for better readability, underscores can be used in numbers (2_010_232 = 2010232), java ^7
 - long
   - 64 bit (integer)
@@ -230,12 +230,12 @@
       }
 
 - if a method has a different signature (but the same name) as the one in the parent class, it's **overloaded** and **not overridden**
-- to call methods from the superclass, it's better practice to call them without super in case they are later overrridden (unless the superclass method version should explicitely be called)
+- to call methods from the superclass, it's better practice to call them without super in case they are later overridden (unless the superclass method version should explicitely be called)
 - **this** is used to call current class members; usually used in constructors and setters, sometimes in getters
 - **super** to call parent class; commonly used in method overriding
 - both can't be used in a static context
 - **super()**: Java puts a default call to super() in the constructor to call the argument-less constructor of the parent class if we don't add it ourselves
-- the **super()** call must be the first statement in the constructor if it's done explicitely
+- the **super()** call must be the first statement in the constructor if it's done explicitly
 - Even abstract classes have a constructor
 - Don't put @Override over constructor
 - A constructor can have a call to super() or this() but not both
@@ -3626,5 +3626,133 @@ Using groups to find specific parts in a string:
 ### Unit testing
 
 - "unit" usually refers to a method
+- popular unit test framework for java: JUnit
 
--
+#### Adding junit to a project
+
+- file -> project structure -> **+** -> locate intellij installation folder and add library from `lib` subfolder
+- easier way: set cursor on class definition (`class Bankaccount...`), alt-enter, select create test, rest is self explanatory
+- then set junit in project structure->modules to "compile" to get rid of not found errors
+- or just alt-enter on error and select "add junit to classpath"
+
+![unit test setup](images/junitcompile.png "set to compile")
+
+#### Create run configuration for tests
+
+A separate run configuration for tests should be created as we don't want to run the application but the tests for a specific class.
+
+Right click in the generated test class outside the method and select "modify run configuration" and click ok
+
+Select the newly created test run configuration and run it to run  the tests (also note the new toolbar to the left for tests).
+
+All generated test stubs pass by default, so best add fail to all of them:
+
+    @org.junit.Test
+    public void deposit() {
+      fail("This test has yet to be implemented");
+    }
+
+- unit test methods must be public and return void; they can, but don't have to have the same name as the methods they're testing.
+- test methods must be annotated with either `@org.junit.Test` or just `@Test`
+- tests use asserts to either pass or fail a test, e.g. `assertEquals(20,21);`
+- single tests can be run in intellij by clicking on the play icon in the gutter beside the test method
+- to run all the tests again, select the appropriate run configuration in the top right menu
+- when running a test suite, only the results of the failed tests are shown
+- For comparing doubles, a third `delta` parameter should be specified that indicates the allowed margin of error: `assertEquals(1500.00, account.getBalance(), 0);` (allowed error margin = 0)
+- every test method should be self contained, but can use instance variables of the test class
+- test methods can have multiple asserts, but one assertion per test is best practice
+- some further methods: 
+  - `assertNotEquals` 
+  - `assertArrayEquals` (2 arrays are equal if they have the same length, values and order)
+  - `assertNull, assertNotNull` (just to make the intention clearer, it's the same as `assertEquals(val, null)`)
+  - `assertSame, assertNotSame` (checks if it's the same instance)
+  - `assertThat` compares value agains a JUnit matcher, comparing a value against a range of values
+- Further Annotations (the actual method names like `setup` etc. don't matter):
+  - `@org.junit.Before, After` to set up / teardown members used by more than one test, reset a DB etc. It is run before / after **every** test in the test class
+  
+
+    public class BankAccountTest {
+      private BankAccount account;
+    
+      @org.junit.Before
+      public void setup() {
+        account = new BankAccount("Peer", "Teer", 1000.00, BankAccount.CHECKING);
+      }
+    
+      @org.junit.Test
+      public void deposit() {
+        account.deposit(500.00, true);
+        assertEquals(1500.00, account.getBalance(), 0);
+      }
+
+- `@org.junit.BeforeClass, AfterClass`: setup / teardown
+
+
+      @org.junit.BeforeClass
+      public static void beforeClass() {
+        System.out.println("run once before all tests");
+      }
+    
+      @org.junit.BeforeClass
+      public void afterClass() {
+        System.out.println("teardown after all tests");
+      }
+
+- To test if a method throws an expected exception, indicate it in the annotation:
+
+    
+    // junit 4.4+
+    @org.junit.Test(expected = IllegalArgumentException.class)
+    public void withdraw_atm() {
+      account.withdraw(501.00, false);
+    }
+
+...or just catch it (older junit versions):
+
+    @org.junit.Test
+    public void withdraw_atm_exception_with_catch() {
+      try {
+        account.withdraw(501.00, false);
+        fail("Should have thronw IllegalArgumentException");
+      } catch(IllegalArgumentException e) {/*noop -> passes*/}
+    }
+
+- **Parameterized tests** allow to run a test with different value combinations; for this, the test class needs to be annotated and the parameters must be defined:
+
+
+    @RunWith(Parameterized.class)
+    public class BankAccountTestParameterized {
+      private BankAccount account;
+      private double amount;
+      private boolean branch;
+      private double expected;
+    
+      public BankAccountTestParameterized(double amount, boolean branch, double expected) {
+        this.amount = amount;
+        this.branch = branch;
+        this.expected = expected;
+      }
+    
+      @Before
+      public void setup() {
+        account = new BankAccount("peer", "teer", 1000.00, BankAccount.CHECKING);
+        System.out.println("Running a test");
+      }
+    
+      @Parameterized.Parameters
+      public static Collection<Object> testConditions() {
+        return Arrays.asList(new Object[][] {
+          {100.00, true, 1100.00},
+          {200.00, true, 1200.00},
+          {325.14, true, 1325.14},
+          {489.33, true, 1489.33},
+          {1000.00, true, 2000.00}
+        });
+      }
+    
+      @org.junit.Test
+      public void deposit() {
+        account.deposit(amount, branch);
+        assertEquals(expected, account.getBalance(), 0);
+      }
+    }
