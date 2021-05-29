@@ -180,7 +180,8 @@
 
 - Object instantiation:
 
-  [Classname] varName = new [Classname]([params])
+
+    Classname varName = new Classname(params)
 
 ### Constructor
 
@@ -1380,6 +1381,12 @@ Overview:
 
 [builtin layouts from oracle documentation](https://docs.oracle.com/javafx/2/layout/builtin_layouts.htm)
 
+Note: properties from controls in the fxml can be reused by referencing it other controls using `${}`:
+
+    <TableView fx:id="artistTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                <columns>
+                    <TableColumn prefWidth="${artistTable.width}" text="Name" />
+
 #### GridPane
 
 - define spacing and alignment in GridPane wrapper: `alignment="center" hgap="10" vgap="10"`
@@ -1391,8 +1398,8 @@ Overview:
 
 ![gridlines](images/gridlines.png)
 
-- Prefered size: determine how much space control gets (default: as much as it needs to display the content)
-- defince column widths with columnConstraint:
+- Preferred size: determine how much space control gets (default: as much as it needs to display the content)
+- define column widths with columnConstraint:
 
       <columnConstraints>
           <ColumnConstraints percentWidth="70.0"/>
@@ -1400,6 +1407,7 @@ Overview:
       </columnConstraints>
 - define pane conten with alignment, e.g. `alignment="top_center"`
 - padding:
+
 
       <padding>
           <Insets top="30"/>
@@ -1612,7 +1620,7 @@ To assign a handle on a control (or any other item), assing a fx:id:
         System.out.println("Well hello, " + nameField.getText());
     }
 
-*DON'T initialize again as the initiliasation is done by the injections done using the @FXML annotation!*
+*DON'T initialize again as the initialization is done by the injections done using the @FXML annotation!*
 
 Every variable referencing a UI element must be prefixed individually:
 
@@ -2058,7 +2066,7 @@ Showing a page in a webview code:
 
 Temp links:
 
-<https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx>
+https://www.tutorialspoint.com/how-to-add-data-to-a-tableview-in-javafx
 
 - For making updates in an ObservableList visible in the *view (e.g. TableView), these must be returned using [varname]Property(), e.g.
 
@@ -3300,7 +3308,7 @@ Because of this, Lambda expressions can only be used with functional interfaces.
 
 ### Functional interfaces & predicates
 
-Predicates: lambda expressions or (anonymous) class that match the [java.util.function.predicate](java.util.function.predicate) interface that accepts one parameter and returns boolean
+Predicates: lambda expressions or (anonymous) class that match the [java.util.function.predicate](https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html) interface that accepts one parameter and returns boolean
 
     // with Lambda
     printEmployeesByAge(employees, "Employees 30 and under", e->e.getAge()<=30);
@@ -3756,3 +3764,297 @@ All generated test stubs pass by default, so best add fail to all of them:
         assertEquals(expected, account.getBalance(), 0);
       }
     }
+
+## Working with databases
+
+### Terminology 
+
+- database dictionary: comprehensive list of structure and types of data in the DB; in sqlite in the _master table
+- column (= field): single entry
+- record (= row) : set of data of all fields
+- linking table: used to link IDs of one table to IDs of another for joins
+- normalization: removing redundancy by splitting tables and joining them by IDs
+- view: selection of rows and columns from one or more tables
+
+### SQLite
+
+- sqlite doesn't complain when putting strings into integer fields (!)
+- sqlite doesn't have an ALTER TABLE command
+- backup with `.backup filename`, restore with `.restore filename` 
+- further useful commands:
+  - .headers on|off (shows table column names in results)
+  - .tables
+  - .schema (shows structure / sql creation code)
+  - .dump (whole table sql export)
+- using autoincrement for primary key avoids reusing keys that were deleted (https://www.sqlite.org/autoinc.html)
+- LIKE is case insensitive (unlike `=`)
+- negation NOT
+- comparisons as usual `<, >, <>`
+- LIMIT on update / delete is not enabled by default as in most other DB systems
+
+### Joins / ordering / wildcards
+
+Join using where ("my way"):
+
+    SELECT artists.name, albums.name, songs.track, songs.title
+    FROM songs, albums, artists
+    where 
+    songs.album=albums._id
+    and albums.artist=artists._id
+    ORDER BY artists.name, albums.name, songs.track;
+
+
+Join using INNER JOIN (same as just JOIN):
+
+    SELECT artists.name, albums.name, songs.track, songs.title
+    FROM songs
+    INNER JOIN albums ON  songs.album=albums._id
+    INNER JOIN artists ON albums.artist=artists._id
+    ORDER BY artists.name, albums.name, songs.track;
+
+Wildcard search examples:
+
+    SELECT artists.name, albums.name, songs.track, songs.title 
+    FROM songs 
+    INNER JOIN albums ON  songs.album=albums._id 
+    INNER JOIN artists ON albums.artist=artists._id 
+    WHERE artists.name like "p%" 
+    ORDER BY artists.name, albums.name, songs.track;
+
+Ordering case-insensitive:
+
+    [...] ORDER BY name COLLATE NOCASE ASC
+
+### Views
+
+- Basic syntax: `CREATE VIEW viewname AS [...rest of the select like the ones above]`
+- in case of column name clashes, sqlite renames columns automatically (e.g. name, name:1); to explicitely set names using AS (line 2):
+  
+      CREATE VIEW artist_list AS 
+      SELECT artists.name AS artist, albums.name AS album, songs.track, songs.title 
+      FROM songs 
+      INNER JOIN albums ON songs.album=albums._id 
+      INNER JOIN artists ON albums.artist=artists._id 
+      ORDER BY artists.name, albums.name, songs.track COLLATE NOCASE;
+
+
+- Delete with `DROP VIEW viewname` 
+- The view can then be used as any other table and even appears when using `.schema`
+- useful for simplified tables / views
+- views are permanently stored in DB and are updated when original tables change
+
+
+
+### Notes on exercises
+
+Count distinct syntax:
+
+    SELECT COUNT(DISTINCT songs.title) 
+    FROM songs INNER JOIN albums ON songs.album=albums._id 
+    INNER JOIN artists ON albums.artist=artists._id 
+    WHERE artists.name="Aerosmith" 
+    COLLATE NOCASE;
+
+### JDBC (Java Database Connectivity)
+
+- works for databases, spreadsheets and flat files
+- middleman between application adn data source
+- specific drivers for the various datasources are needed, e.g. sqlite JDBC driver
+- all drivers implement the jdbc interface so they are (to a degree, e.g. db specific SQL) interchangable
+- 2 packages:
+  - java.sql (core JDBC)
+  - javax.sql (optional JDBC); required when working with database servers (?)
+- JDK ships with a DB called **derby** (and it's JDBC driver) which can be used for desktop applications and prototyping
+- adding sqlite (or other libraries) like usual over file->project structure
+
+#### Connecting to the database
+
+- datasource objects (more complicated, for larger / enterprise DBs with connection pooling etc); not covered in this course
+- Drivermanager.getConnection; example:
+
+      try {
+        Connection conn =
+            DriverManager.getConnection(
+                ("jdbc:sqlite:/home/pk/projects/IdeaProjects/Java_masterclass/dbs/testjava.db"));
+        // or just "jdbc:sqlite:testjava.db" to create in same project directory
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+
+  - this opens (and creates if necessary) the specified sqlite DB
+- close with `conn.close()` or use the more modern "try with ressources" to close it automatically:
+
+      try (Connection conn = DriverManager.getConnection(("jdbc:sqlite:testjava.db")); ) {
+        Statement statement = conn.createStatement();
+        statement.execute(
+            "CREATE TABLE IF NOT EXISTS contacts (name TEXT, phone INTEGER, email TEXT)");
+        statement.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+
+#### Statement objects
+
+- statements are by default auto committed
+    Statement statement = conn.createStatement();
+    statement.execute("CREATE TABLE IF NOT EXISTS contacts (name TEXT, phone INTEGER, email TEXT)");
+
+Selecting and getting results:
+
+      statement.execute("select * from contacts");
+      ResultSet results = statement.getResultSet();
+      // or, shorter:
+      // ResultSet results = statement.executeQuery("SELECT * FROM contacts");
+      while (results.next()) { // initially the cursor is before the first record
+        System.out.println(
+            results.getString("name")
+                + " "
+                + results.getInt("phone")
+                + " "
+                + results.getString("email")
+                + " ");
+      }
+      results.close();
+
+- every ResultSet has a cursor, initially positioned *before* the first record
+- ResultSets are a ressource and should be closed (or used with try with ressources)
+- every statement can only have one active ResultSet, so if we change the statement object, the ResultSet is closed, so if multiple resultsets are required at the same time, multiple Statement objects must be used
+
+- Table names, column names and other hardcoded strings should be put into constants; in Intellij: select variable or put cursor in string and press ctrl-alt-c to make it into a constant (or -v for variable) 
+- Using **result set indexes** (which are **1-based**, and are NOT the table indices) is more performant than using column names, but less readable; only use indices if using names is actually a bottleneck in the application; and if you do, use constants for the column indices for better readability and easier changes if the table structure changes; 
+- Intellij note: strg-shfit-u to toggle selection between upper and lower case (useful for SQL statements)
+
+#### Getting Metadata
+
+SQLite doesn't support getting full metadata as with `.schema` on the command line, but limited metadata can be obtained from a result set:
+
+    public void querySongsMetadata() {
+    String sql = "SELECT * FROM " + TABLE_SONGS;
+      try(Statement stmt = conn.createStatement(); ResultSet results = stmt.executeQuery(sql)) {
+        ResultSetMetaData  meta = results.getMetaData();
+        int numColumns = meta.getColumnCount();
+        for(int i=1; i<=numColumns; i++) {
+          System.out.format("Column %d in the sontas table is named %s\n", i, meta.getColumnName(i));
+        }
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+
+#### Obtaining results from sql functions such as COUNT(*)
+
+- either use the appropriate column indexed in the order of the functions in the select statement, e.g. result.getInt(1)
+- or assign a name and use that one, e.g. `COUNT(*) as count` -> `result.getInt("count")`
+
+#### Working with Views
+
+- can be done the same way as tables
+
+#### Prepared statements
+
+- subclass of Statement, so it has the same methods
+- values are treated as string literals and not as SQL / autoescaped
+- avoids SQL injections (though JDBC SQLite driver at least protects from running more than one statement in executeQuery)
+- is precompiled and reusable, thus more performant
+- when closing a prepared statement, the resultset is closed as well (*isn't that true for Statements in general?*)
+- in order to precompile the statement, the columns must be known, so only the actual values can be replaced with the `?` placeholders
+- to make a prepared statement return the keys of an insert, use a second parameter: `insertIntoArtist = conn.prepareStatement(INSERT_ARTIST, Statement.RETURN_GENERATED_KEYS);` 
+- for inserting / altering the DB use `executeUpdate` instead of `executeQuery`, which returns the # of rows affected by the statement
+    
+    // declare constant for SQL statement 
+    public static final String QUERY_VIEW_SONG_INFO_PREP =
+      "SELECT "
+          + VIEW_COLUMN_NAME
+          + ", "
+          + VIEW_COLUMN_ALBUM
+          + ", "
+          + VIEW_COLUMN_TRACK
+          + " FROM "
+          + TABLE_ARTIST_SONG_VIEW
+          + " WHERE "
+          + VIEW_COLUMN_TITLE
+          + " = ?";
+    
+    // create PreparedStatement instance
+    private PreparedStatement querySongInfoViewsStmt;
+    
+    // initialise in constructor or in open() method
+    // prepare statenent
+    querySongInfoViewsStmt = conn.prepareStatement(QUERY_VIEW_SONG_INFO_PREP);
+    //...
+    public List<SongArtist> querySongInfoView(String title) {
+      try {
+        // set values
+        querySongInfoViewsStmt.setString(1, title);
+        // run statement
+        ResultSet resultSet = querySongInfoViewsStmt.executeQuery();
+    // process results as usual
+    // close in connection close method, as the statement can be reused 
+
+#### Transactions
+
+- sequence of SQL statements that are treated as a single logical unit
+- useful for multiple statements that shouldn't be committed (or rolled back) if any one of them fails (e.g. deduct from bankaccount A and transfer to account B)
+- only needed when changes are done to the DB
+- DB transactions must be **ACID** compliant:
+  - Atomicity: if one of the statement in a transaction fails, none its statements are committed
+  - Consistency: DB is in a valid state before and after the transaction
+  - Isolation: changes from a transaction aren't visible to other connections until they are completed
+  - Durability: Once the changes from the transactions are committed,they are permanent (even if the application or DB crashes) (data integrity)
+- SQLite uses transactions by default, but autocommits
+- JDBC autocommits changes by default when executing queries
+- to avoid, set `connection.autoCommit(false)`
+- SQLite commands for transactions:
+  1. BEGIN TRANSACTION - manually start transaction
+  2. END TRANSACTION - end transactions (committing automatically ends a transaction, and ending a transaction automatically commits, meaning END TRANSACTION = COMMIT)
+  3. COMMIT - commit changes, same as END TRANSACTION
+  4. ROLLBACK - roll back uncommited changes and end transactions
+- closing a connection before commit automatically rolls back outstanding changes
+
+With JSBC, Statement objects (as opposed to the SQL transaction commands above) are used:
+
+1. `Connection.setAutoCommit(false);`
+2. perform SQL operation
+3. if no errors, `Connection.commit()`, otherwise `Connection.rollback()`
+4. `Connection.setAutoCommit(true);` (turn default behaviour back on after transaction, as this is a global setting of the reused connection object)
+
+Example adding a Song to the music db:
+
+1. Input: title, album, track, artist
+2. artist exists in artists? -> 4
+3. add artist to artists table
+4. album exists in albums? -> 6
+5. add album to albums table
+6. add song to songs table (if it doesn't exist for the same album with the same track#)
+
+#### Using DBs in a GUI application
+
+- see 025b_MusicUI
+
+## Java networking
+
+### Networking overview
+
+- all participants: hosts
+- common network configuration: one or more hosts act as servers, the other hosts as clients
+- can be on the same host (e.g. local web server with browser as client)
+- common protocols: TCP and UDP
+- **ports** are used to route data to the correct target application on the host
+- IPv4: 4 integer segments separated by dots (32 bits), IPv6: 8 hexadecimal segments separated by colons (128 bits)
+- TCP: Transmission Control Protocol: establishes 2-way connection between hosts
+- TCP/IP: TCP protocol with IP address scheme using the client/server model
+  1. client opens a connection to the server
+  2. client sends a request to the server
+  3. server sends response to client
+  4. client closes the connection to the server
+- `java.net` package contains the classes to establish connections and send messages between computers
+  - 2 sets of APIs: low level and high level API
+    - uses sockets (endpoints of a 2-way connection) to send and receive requests/responses;
+    - multiple clients to the same server (or server application) use the same port, but each client uses it's own socket
+    - in Java: `Socket` and `ServerSocket` class respectively
+    - to create a socket in Java, only the IP address and the port have to be specified, handshake / packets are taking care of under the hood
+
+
+
+
+
