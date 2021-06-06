@@ -2280,6 +2280,8 @@ Scanner closes any stream it is using automatically if the scanner instance is c
         e.printStackTrace();
       }
 
+- *DON'T* use reader.ready() as the while condition!
+
 #### BufferedWriter
 
 - same as BufferedReader, writes to file in chunks
@@ -4038,7 +4040,9 @@ Example adding a Song to the music db:
 - all participants: hosts
 - common network configuration: one or more hosts act as servers, the other hosts as clients
 - can be on the same host (e.g. local web server with browser as client)
-- common protocols: TCP and UDP
+- common protocols: TCP and UDP (user datagram protocol)
+  - TCP: needs handshake, haserror checking, tight coupling between client / server
+  - UDP: non reliable, fast connection without response using datagrams (self contained message that is not guaranteed to arrive); used for messaging, video streaming
 - **ports** are used to route data to the correct target application on the host
 - IPv4: 4 integer segments separated by dots (32 bits), IPv6: 8 hexadecimal segments separated by colons (128 bits)
 - TCP: Transmission Control Protocol: establishes 2-way connection between hosts
@@ -4055,6 +4059,230 @@ Example adding a Song to the music db:
     - to create a socket in Java, only the IP address and the port have to be specified, handshake / packets are taking care of under the hood
 
 
+Getting hosts:
+
+- InetAddress address = InetAddress.getLocalHost();
+- InetAddress address = InetAddress.getByName(...);
+
+### Low level access
+
+- See 027_NW_Echo* and UDP*
+- classes used: Socket, ServerSocket, DatagramSocket
+
+### High level libraries
+
+- [URI](https://www.w3.org/TR/uri-clarification/): Universal resource identifier that might not provide enough information to access the ressource it identifies
+- URL includes this information
+- Like relative and absolute path
+- difference between URI and URL is small and controversial
+- Recommended practice in java.net classes: use URI until you need to actually access it, then convert to URL
+- scheme: part of UR[I/L] that appears before colon, like `file`, `http` etc.
+
+When working with the high level API, classes used are URI, URL, URLConnection, HttpURLConnection.
+
+#### URI components:
+
+`scheme:[//[user[:password]]]@]host[:port]][/path][?query][#fragment]`
+
+1. scheme
+2. scheme specific part
+3. authority
+4. user-info
+5. host
+6. port
+7. path
+8. query
+9. fragment
+
+URIs specifying scheme are **absolute URIs**, without **relative URIs**
+
+Example:
+
+    Full URI: db://username:password@myserver.com:5000/catalogue/phones?os=android#article
+    Scheme = db
+    Scheme-specific part = //username:password@myserver.com:5000/catalogue/phones?os=android
+    Authority = username:password@myserver.com:5000
+    User info = username:password
+    Host = myserver.com
+    Port = 5000
+    Path = /catalogue/phones
+    Query = os=android
+    Fragment = article
+
+This is also a well formed (though useles) URI:
+
+    Full URI: Hello
+    Scheme = null
+    Scheme-specific part = Hello
+    Authority = null
+    User info = null
+    Host = null
+    Port = -1
+    Path = Hello
+    Query = null
+    Fragment = null
+
+Scheme can be any String for a URI, but when converting an URI to an URL using `uri.toURL()` it has to be valide (`db:` in the above example throws an MalformedURLException when converting to a URL)
+
+A URI can contain only parts of the full definition, but when converting a URI to a URL, all necessary information must be in the URI.
+
+URIs can be concatenated using resolve:
+
+    String baseUriStr = "http://username:password@myserver.com:5000";
+    URI baseUri = new URI(baseUriStr);
+    String uriStr = "/catalogue/phones?os=android#article";
+    URI uri = new URI(uriStr);
+    
+    URI resultUri = baseUri.resolve(uri);
+    URL url = uri.toURL();1
+
+2 Ways to read a web page:
+
+    try (BufferedReader inputStream =
+        new BufferedReader(new InputStreamReader(url.openStream())) ) {
+      String line;
+      while ((line = reader.readLine())!= null) {
+        System.out.println(line);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    URL url = new URL("http://example.org");
+    // doesn't connect,  just returns connection instance
+    URLConnection urlConnection = url.openConnection(); 
+    //urlConnection.setDoOutput(true); // not necessary here, could be used to write to a form
+    urlConnection.connect(); // connection values must be set BEFORE connect()
+    BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+    // ... same as above
+
+Get headers only (use `getHeaderfield(field)` for single fields):
+
+    Map<String, List<String>> headerFields = urlConnection.getHeaderFields();
+
+`HttpURLConnection`: subclass of URL connection, includes HTTP specific features such as [post, get etc](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html); also: `HttpsURLConnecion`
+
+- The underlying connection persists "under the hood", even when the connection object is finished
+- explicitely connecting is not necessary as it is performed under the hood when using a method that accesses it like getHeaderFields
+
+#### Alternatives to HttpUrlConnection
+
+- many java devs don't use the java.net package when working with URLs [for a variety of reasons](http://openjdk.java.net/jeps/110);
+- this is marked as closed / delivered with java 9 
+- new [HttpClient](https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html) introduced in java 11
+- further alternatives: jetty, [apache http java library](http://hc.apache.org) (very easy to use)
 
 
+- Intellij: to run more than one instance, edit run configuration (upper right) and select "allow multiple instances"
 
+
+## Java 9 Platform Module system (JPMS)
+
+- designed to have strong encapsulation and modular JDK/JRE
+- solves problems with development and deployment
+
+### Module
+
+- named collection of data and code
+- can contain code that is organized as a set of packagesm where each package can contain classes, interfaces etc
+- Module configuration:
+  - name -> unique name of module
+  - inputs -> what the module needs to use / what is required for the module to compile/run
+  - outputs: what the module outputs exports to other modules
+- this way, only the module and not every package needs to be specified in an app that uses the module
+
+![modules](images/modules.png)
+
+- Java SE 9 platform is divided in a set of modules (aka platform modules)
+- standard modules have names prefixed with `java.` (e.g. `java.sql`), JavaFX modules are prefixed `javafx`
+
+- Every module comes with a module descriptor file `module-info.java` located at the module root folder.
+- Module declaration introduces a module name that can be used in other module declarations
+- module name consists of one or more Java identifiers separated by dots
+- 2 kinds of modules:
+  - normal modules (without open modifier) grants access at compile time and run time to types in only those packages explicitly exported.
+  - open modules: same as above but grants access at *run time* to types in all its packages, as if all packages had been exported
+
+![modules](images/modules2.png)
+
+Goals: 
+- scale platform down to smaller computing devices, achieved by moving from a monolithic runtime
+- security and maintainability
+- improve performance
+- easier development
+
+
+Module declaration:
+
+    [open] module <moduleName> {
+      <module-statement>;
+      <module-statement>;
+      ...
+    }
+
+statements:
+
+- exports
+- opens -> can't be used in open modules as all packages in open modules are open
+- requires -> specify module(s) that is required by the current module
+- uses -> specifies service that the current module consumes
+- provides -> specifies the service implementations that the current module provides
+
+#### Module types
+
+![modules](images/module3.png)
+
+
+##### named modules
+
+- must have a name
+- can be normal or automatic
+- declared in module-info.java
+- doesn't export any packages by default
+- divided into basic and open modules
+
+##### automatic modules
+
+- not explicitely declared
+- created after adding a JAR in the module path
+- exports all packages by default
+- used for migrating existing application to java 9
+
+##### Basic modules
+
+- modules that are neither automatic nor open
+- same characteristic as normal module excit it's not open
+
+##### Open modules
+
+- defined using **open** keyword (whole module or specific packages)
+- makes all packages inside accessible for deep reflection (needed by spring, hibernate etc)
+
+##### Unnamed modules
+
+- is a module made up of all JAR files from the classs path
+- no name, not declared
+- exports all packages
+- reads all modules in JDK and on module path
+- a named module can't require an unnamed module
+
+##### Aggregator modules
+
+- exist for convenience
+- just have a module descriptor, no own code
+- collect and export contents of other modules
+- JDK has several aggregator modules, e.g. `java.se`
+
+#### Module path and class path
+
+- jdk 9 introduced module path
+- can represent 
+  - path to sequence of folders containing modules
+  - path to modular JAR file
+  - path to JMOD file (extended version of jar)
+- is used by compiler to find and resolve modules
+- Every module from a module path needs to have a module-info.java
+
+Skipping java8->9 project migration part as I will not needed in the mid term future
+
+**DONE**
