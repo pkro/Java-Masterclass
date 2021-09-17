@@ -1,5 +1,8 @@
 # Course notes for Java complete masterclass on udemy
 
+<!-- START doctoc -->
+<!-- END doctoc -->
+
 ## 3. First steps
 
 - basic command line compilation (from src directory): `javac -cp . de/pkro/Main.java`
